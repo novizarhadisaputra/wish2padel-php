@@ -72,6 +72,7 @@ class TeamController
         $stmt->execute();
         $resSchedule = $stmt->get_result();
 
+        view('team.profile', compact('team', 'contact', 'final_members', 'resSchedule'));
     }
 
     public function myTeam()
@@ -318,7 +319,7 @@ class TeamController
         }
 
         view('team.my_team', compact('team_info', 'team_contact', 'team_members', 'activeWindow', 'activeWindowLabel', 'tournament', 'canEditMembers'));
-
+    }
     public function scheduled()
     {
         $conn = getDBConnection();
