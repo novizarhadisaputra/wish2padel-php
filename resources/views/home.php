@@ -4,27 +4,8 @@
 
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <link rel="icon" type="image/png" sizes="32x32" href="<?= asset('assets/image/w2p%20logo.jpeg') ?>">
-        <link rel="icon" type="image/png" sizes="16x16" href="<?= asset('assets/image/w2p%20logo.jpeg') ?>">
-        <link rel="apple-touch-icon" href="<?= asset('assets/image/w2p%20logo.jpeg') ?>">
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta name="description" content="Wish2Padel - Join padel tournaments, leagues, and community events. Manage team, and compete in padel across Saudi Arabia." />
-        <meta name="keywords" content="padel, wish2padel, tournamnet padel, padel arab, league padel, play padel, league padel saudi, liga padel arab, league padel saudi" />
-        <meta name="author" content="Wish2Padel Team" />
-        <meta property="og:title" content="Wish2Padel - Dashboard" />
-        <meta property="og:description" content="Join padel tournaments, leagues, and community events. Manage team, and compete in padel across Saudi Arabia." />
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://www.wish2padel.com/" />
-        <meta property="og:image" content="<?= asset('assets/image/w2p%20logo.jpeg') ?>" />
-        
-        <title>Wish2Padel</title>
-     
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
-        <link rel="stylesheet" href="<?= asset('assets/css/stylee.css?v=12') ?>">
-        <style>
+    <?php view('partials.head', ['title' => 'Wish2Padel']); ?>
+    <style>
         .carousel-item.active .animate-text.delay-1 {
           animation: fadeSlideIn 1.2s 1s ease-out forwards;  
         }
@@ -232,50 +213,9 @@
     
         <?php view('partials.footer'); ?>
     
-        <button id="scrollTopBtn" title="Go to top">↑</button>
-    
-        <script>
-          const scrollBtn = document.getElementById("scrollTopBtn");
-        
-          window.onscroll = function() {
-            if (document.body.scrollTop > 200 || document.documentElement.scrollTop > 200) {
-              scrollBtn.style.display = "block";
-            } else {
-              scrollBtn.style.display = "none";
-            }
-          };
-        
-          scrollBtn.addEventListener("click", function() {
-            window.scrollTo({
-              top: 0,
-              behavior: "smooth"
-            });
-          });
-        </script>
-        <script>
-      document.addEventListener('DOMContentLoaded', function () {
-        const navbar = document.getElementById('maiavbar');
-        const hero = document.getElementById('heroCarousel'); 
-    
-        function toggleNavbarFixed() {
-          if (!hero || !navbar) return;
-    
-          const scrollPos = window.scrollY;
-          const heroHeight = hero.offsetHeight;
-    
-          if (scrollPos >= heroHeight) {
-            navbar.classList.add('navbar-fixed');
-            document.body.style.paddingTop = navbar.offsetHeight + 'px'; 
-          } else {
-            navbar.classList.remove('navbar-fixed');
-            document.body.style.paddingTop = '0';
-          }
-        }
-    
-        window.addEventListener('scroll', toggleNavbarFixed);
-        toggleNavbarFixed(); // jalankan sekali saat load
-      });
-    </script>
+        <?php view('partials.scroll_top'); ?>
+        <?php view('partials.navbar_sticky_script', ['sticky_target' => 'heroCarousel']); ?>
+
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     </body>
