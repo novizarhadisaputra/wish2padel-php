@@ -8,7 +8,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>League Zone - Wish2Padel</title>
   <link rel="stylesheet" href="<?= asset('assets/css/stylee.css?v=12') ?>">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
 </head>
@@ -479,7 +478,7 @@ while($row = $tournaments->fetch_assoc()) {
                             <?= htmlspecialchars($league['name']) ?> (<?= htmlspecialchars($league['date']) ?>)
                         </option>
 
-                            <?php endforeach; ?>
+                            <?php endwhile; ?>
                         </select>
                     </div>
                     <div class="mb-3">
