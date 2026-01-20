@@ -1,0 +1,507 @@
+nav.navbar {
+  background: linear-gradient(90deg, #000000, #4f4f4f);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.25);
+  font-size: 1rem;
+  font-weight: 600;
+}
+nav .navbar-brand {
+  color: #ffffff;
+  font-weight: 700;
+  display: flex;
+  margin-left: 30px;
+  margin-right: 70px;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+  min-width: 150px;
+}
+nav .nav-item {
+  margin-left: 20px;
+}
+nav .navbar-nav > li > a.nav-link {
+  color: #ffffff;
+  padding: 1rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: color 0.3s ease;
+  cursor: pointer;
+  text-align: center;
+  user-select: none;
+}
+nav .navbar-nav > li > a.nav-link:hover,
+nav .navbar-nav > li > a.nav-link:focus {
+  color: #fff9c4;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  text-decoration: none;
+}
+nav .navbar-nav > li.show > a.nav-link,
+nav .navbar-nav > li > a.nav-link.active {
+  color: #fff;
+  font-weight: 700;
+}
+
+nav .navbar-nav > li > a.nav-link.active::after {
+  content: "";
+  position: absolute;
+  bottom: 6px;
+  left: 25%;
+  width: 50%;
+  height: 3px;
+  background-color: #f3e6b6;
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+nav .navbar-nav > li > a.nav-link:hover::after {
+  width: 60%;
+  background-color: #fff9c4;
+}
+
+.dropdown-menu.mega-dropdown {
+  position: absolute;
+  width: 100%; /* Ikuti lebar induk (navbar) */
+  left: 0; /* mulai dari kiri navbar */
+  right: auto; /* hapus right: 0 supaya tidak stretch ke kanan layar */
+  top: 100%;
+  padding: 1.5rem 2rem;
+  border-radius: 0;
+  border: none;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.15);
+  background-color: #f9fdfb;
+  color: #004d40;
+  font-weight: 600;
+  font-size: 1rem;
+  max-width: none; /* pastikan tidak dibatasi max-width */
+  box-sizing: border-box;
+}
+
+.mega-dropdown .row > div {
+  padding: 0 1rem;
+}
+.mega-dropdown h6 {
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+  color: black;
+  border-bottom: 3px solid #f3e6b6;
+  padding-bottom: 0.4rem;
+}
+.mega-dropdown a.dropdown-item {
+  padding-left: 0;
+  color: gray;
+  font-weight: 500;
+  transition: color 0.25s ease;
+}
+.mega-dropdown a.dropdown-item:hover {
+  color: #f3e6b6;
+  font-weight: 700;
+  background-color: transparent;
+}
+
+.navbar-nav.ms-auto > li > a.nav-link {
+  color: #c8f0e8;
+  font-weight: 700;
+  padding: 1rem 1.3rem;
+  margin-right: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+}
+.navbar-nav.ms-auto > li > a.nav-link:hover,
+.navbar-nav.ms-auto > li.show > a.nav-link {
+  color: #fff;
+  background-color: rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.btn-gold {
+  margin-top: 8px;
+  background-color: #f3e6b6;
+  color: #212121 !important;
+  font-weight: 700;
+  padding: 0.6rem 1.3rem;
+  border-radius: 25px;
+  box-shadow: 0 5px 12px rgba(255, 215, 0, 0.5);
+  border: none;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  user-select: none;
+}
+.btn-gold:hover {
+  background-color: #f3e6b6;
+  box-shadow: 0 7px 18px rgba(230, 194, 0, 0.7);
+  text-decoration: none;
+  color: #212121 !important;
+}
+.btn-gold:active {
+  background-color: #b89a00;
+  box-shadow: none;
+}
+
+@media (max-width: 1253px) {
+  nav .navbar-brand {
+    margin-left: 10px;
+    margin-right: 20px;
+  }
+  nav .nav-item {
+    margin-left: 10px;
+  }
+}
+
+/* Mobile Styles */
+@media (max-width: 767.98px) {
+  nav .navbar-brand {
+    margin-left: 0px;
+  }
+  nav .navbar-brand,
+  nav .navbar-nav > li > a.nav-link {
+    justify-content: flex-start;
+    text-align: left;
+    padding-left: 1rem;
+  }
+  .navbar-nav.ms-auto > li > a.nav-link,
+  .btn-login {
+    margin-right: 0.7rem;
+  }
+}
+
+/* Reset margin-top supaya carousel pas dibawah navbar */
+#heroCarousel {
+  position: relative;
+  max-height: 600px;
+  overflow: hidden;
+  margin-top: 0;
+  height: 600px;
+}
+
+#heroCarousel .carousel-inner,
+#heroCarousel .carousel-item {
+  height: 100%;
+}
+
+#heroCarousel .hero {
+  height: 100%;
+  background-position: center;
+  background-size: cover;
+  position: relative;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 0 4rem;
+  box-sizing: border-box;
+}
+
+/* Text container di kanan, tengah vertikal */
+#heroCarousel .hero-text {
+  max-width: 460px;
+  color: #fff;
+  text-shadow: 1px 1px 6px rgba(0, 0, 0, 0.7);
+}
+
+#heroCarousel .hero-text h6 {
+  font-weight: 700;
+  font-size: 1.1rem;
+  letter-spacing: 2px;
+  margin-bottom: 0.4rem;
+  text-transform: uppercase;
+  color: #f3e6b6;
+}
+
+#heroCarousel .hero-text h1 {
+  font-weight: 900;
+  font-size: 3rem;
+  line-height: 1.1;
+  margin-bottom: 1rem;
+}
+
+#heroCarousel .hero-text p {
+  font-size: 1.1rem;
+  line-height: 1.4;
+  font-weight: 500;
+  color: #f9f9f9;
+}
+
+/* Carousel indicators custom: di atas bawah, sejajar kanan teks */
+.carousel-indicators.custom-indicators {
+  position: absolute;
+  bottom: 60px;
+  right: 4rem;
+  margin: 0;
+  display: flex;
+  gap: 14px;
+  z-index: 10;
+}
+
+.carousel-indicators.custom-indicators button {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.4);
+  border: none;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+  cursor: pointer;
+}
+
+.carousel-indicators.custom-indicators button:hover,
+.carousel-indicators.custom-indicators button:focus {
+  background-color: #f3e6b6;
+  outline: none;
+}
+
+.carousel-indicators.custom-indicators .active {
+  background-color: #f3e6b6;
+  width: 18px;
+  height: 18px;
+  transform: scale(1.2);
+}
+
+/* Animasi teks masuk */
+.animate-text {
+  opacity: 0;
+  transform: translateX(20px);
+  animation-fill-mode: forwards;
+  animation-timing-function: ease-out;
+}
+
+.carousel-item.active .animate-text.delay-1 {
+  animation: fadeSlideIn 0.6s 0.2s forwards;
+}
+.carousel-item.active .animate-text.delay-2 {
+  animation: fadeSlideIn 0.6s 0.8s forwards;
+}
+.carousel-item.active .animate-text.delay-3 {
+  animation: fadeSlideIn 0.6s 1.4s forwards;
+}
+
+@keyframes fadeSlideIn {
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Responsive tweaks */
+@media (max-width: 768px) {
+  #heroCarousel .hero-text {
+    max-width: 90%;
+    padding-right: 1rem;
+    text-align: right;
+  }
+
+  #heroCarousel .hero-text h1 {
+    font-size: 2.2rem;
+  }
+
+  #heroCarousel .hero {
+    padding: 2rem 2rem;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+  }
+
+  #heroCarousel .hero-text {
+    text-align: center;
+  }
+
+  /* indikator pindah ke tengah bawah fullscreen */
+  .carousel-indicators.custom-indicators {
+    right: 50%;
+    left: 50%;
+    bottom: 15px;
+    transform: translateX(-50%);
+  }
+}
+
+/* Section Base */
+.welcome-section {
+  background-color: #303030;
+  color: rgb(255, 255, 255);
+  padding: 50px;
+  font-family: Arial, sans-serif;
+}
+
+/* Container Flex */
+.welcome-container {
+  display: flex;
+  gap: 40px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+/* Left Image */
+.welcome-image-box {
+  position: relative;
+  width: 600px;
+  min-width: 300px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.welcome-image-box img {
+  width: 100%;
+  height: 500px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+/* Caption Box */
+.welcome-caption {
+  position: absolute;
+  bottom: 15px;
+  right: 15px;
+  background: rgba(0, 0, 0, 0.6);
+  padding: 12px 18px;
+  border-radius: 6px;
+  max-width: 80%;
+  font-size: 0.9rem;
+  box-shadow: 0 0 8px #f3e6b6;
+  color: #ffffff;
+}
+
+/* Right Text Area */
+.welcome-text {
+  flex: 1;
+  min-width: 300px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.welcome-text h6 {
+  color: #ffffff;
+  letter-spacing: 1.5px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.welcome-text h2 {
+  color: #ffffff;
+  margin-bottom: 20px;
+  font-weight: 700;
+}
+
+.welcome-text p {
+  font-size: 1.15rem;
+  line-height: 1.6;
+  margin-bottom: 30px;
+  max-width: 650px;
+  color: #ffffff;
+}
+
+/* Button Style */
+.welcome-text button {
+  background-color: #f3e6b6;
+  color: black;
+  border: none;
+  padding: 12px 25px;
+  font-weight: bold;
+  font-size: 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  width: fit-content;
+  transition: background-color 0.3s ease;
+}
+
+.welcome-text button:hover {
+  background-color: #f3e6b6;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .welcome-container {
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
+  }
+
+  .welcome-image-box {
+    width: 100%;
+    max-width: 700px;
+  }
+
+  .welcome-image-box img {
+    height: auto;
+  }
+
+  .welcome-text {
+    text-align: center;
+  }
+
+  .welcome-text p {
+    max-width: 90%;
+    margin: 0 auto 30px auto;
+  }
+}
+
+@media (max-width: 600px) {
+  .welcome-section {
+    padding: 30px 15px;
+  }
+
+  .welcome-text h2 {
+    font-size: 1.8rem;
+  }
+
+  .welcome-text p {
+    font-size: 1rem;
+  }
+
+  .welcome-caption {
+    font-size: 0.8rem;
+  }
+}
+
+/* Scroll to Top Button Styles */
+#scrollTopBtn {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  z-index: 999;
+  background-color: #f3e6b6;
+  color: #696969;
+  border: none;
+  outline: none;
+  width: 50px;
+  height: 50px;
+  font-size: 1.5rem;
+  border-radius: 50%;
+  cursor: pointer;
+  display: none; /* hidden by default */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+#scrollTopBtn:hover {
+  background-color: #f3e6b6;
+  transform: scale(1.1);
+}
+
+/* Navbar default (sudah ada background dan shadow dari kamu) */
+nav#maiavbar {
+  width: 100%;
+  transition: all 0.3s ease;
+  z-index: 9999;
+}
+
+/* Navbar jadi fixed dan muncul dengan animasi */
+nav#maiavbar.navbar-fixed {
+  position: fixed;
+  top: 0;
+  left: 0;
+  background: linear-gradient(90deg, #000000, #4f4f4f);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.25);
+  animation: fadeInDown 0.4s ease forwards;
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

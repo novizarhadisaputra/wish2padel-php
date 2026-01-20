@@ -1,0 +1,267 @@
+<?php
+require '../config.php';
+
+if (!isset($_SESSION['user_id']) || ($_SESSION['role'] ?? '') !== 'admin') {
+    header("Location: ../login/login.php");
+    exit();
+}
+// Config loaded above
+$conn = getDBConnection();
+$username = $_SESSION['username'] ?? null;
+$current_page = basename($_SERVER['PHP_SELF']);
+
+        date_default_timezone_set("Asia/Riyadh");
+        
+        $server_time = date('c');
+        $server_datetime = date('l, d F Y H:i:s'); 
+        $username = $_SESSION['username'] ?? 'User';
+        $role = $_SESSION['role'] ?? 'Admin';
+        
+        $total_leagues = $conn->query("SELECT COUNT(*) AS total FROM league")->fetch_assoc()['total'];
+        $total_zones = $conn->query("SELECT COUNT(DISTINCT name) AS total FROM tournaments")->fetch_assoc()['total'];
+        
+        $total_news = $conn->query("SELECT COUNT(*) AS total FROM blog_news")->fetch_assoc()['total'];
+        $total_matches = $conn->query("SELECT COUNT(*) AS total FROM matches")->fetch_assoc()['total'];
+        $total_sponsors = $conn->query("SELECT COUNT(*) AS total FROM sponsors")->fetch_assoc()['total'];
+        $total_teams = $conn->query("SELECT COUNT(DISTINCT team_name) AS total FROM team_info")->fetch_assoc()['total'];
+        $total_clubs = $conn->query("SELECT COUNT(*) AS total FROM centers")->fetch_assoc()['total'];
+        $total_captains = $conn->query("SELECT COUNT(*) AS total FROM team_info")->fetch_assoc()['total'];
+        $total_members = $conn->query("SELECT COUNT(DISTINCT player_name) AS total FROM team_members_info")->fetch_assoc()['total'];
+        $total_players = $total_members;
+        $total_completed_matches = $conn->query("SELECT COUNT(DISTINCT match_id) AS total FROM match_results WHERE status='accept'")->fetch_assoc()['total'];
+        
+        $now = date('Y-m-d H:i:s');
+        $next_match_res = $conn->query("
+            SELECT m.id, m.tournament_id, m.journey, m.team1_id, m.team2_id, m.scheduled_date,
+                   t.name AS tournament_name,
+                   team1.team_name AS team1_name,
+                   team2.team_name AS team2_name
+            FROM matches m
+            LEFT JOIN tournaments t ON m.tournament_id = t.id
+            LEFT JOIN team_info team1 ON m.team1_id = team1.id
+            LEFT JOIN team_info team2 ON m.team2_id = team2.id
+            WHERE m.scheduled_date >= '$now'
+            ORDER BY m.scheduled_date ASC
+            LIMIT 1
+        ");
+        $next_match = $next_match_res->fetch_assoc();
+        
+        $transactions_res = $conn->query("
+        SELECT pt.id, pt.team_id, pt.tournament_id, pt.status,
+               tm.team_name, tr.name AS tournament_name
+        FROM payment_transactions pt
+        LEFT JOIN team_info tm ON pt.team_id = tm.id
+        LEFT JOIN tournaments tr ON pt.tournament_id = tr.id
+        WHERE pt.id IN (
+            SELECT MAX(pt2.id)
+            FROM payment_transactions pt2
+            WHERE pt2.status = 'paid'
+            GROUP BY pt2.team_id, DATE(pt2.created_at)
+        )
+        ORDER BY pt.id DESC
+        LIMIT 1;
+        ");
+        $transactions = [];
+        while($row = $transactions_res->fetch_assoc()) $transactions[] = $row;
+    ?>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="icon" type="image/png" sizes="32x32" href="https://www.wish2padel.com/assets/image/w2p.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="https://www.wish2padel.com/assets/image/w2p.png">
+    <link rel="apple-touch-icon" href="https://www.wish2padel.com/assets/image/w2p.png">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Admin Dashboard - Wish2Padel</title>
+    <link rel="stylesheet" href="../assets/css/stylee.css?v=12">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    <script src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>
+      <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    
+    </head>
+    <style>
+  .dashboard-card {
+    position: relative;
+    background: #ffffff;
+    border-radius: 1rem;
+    padding: 1.5rem 1rem;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.35);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    overflow: hidden;
+  }
+
+  .dashboard-card:hover {
+    transform: translateY(-6px) scale(1.02);
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.55);
+  }
+
+  .dashboard-card i {
+    font-size: 2rem;
+    margin-bottom: 10px;
+  }
+
+  .dashboard-card h5 {
+    font-weight: 500;
+    color: #444;
+    margin-bottom: 5px;
+  }
+
+  .dashboard-card h2 {
+    font-weight: 700;
+    font-size: 2.2rem;
+    color: #111;
+  }
+
+  .learn-more {
+    display: inline-block;
+    margin-top: 8px;
+    font-size: 0.85rem;
+    color: black;
+    text-decoration: none;
+    font-weight: 700;
+  }
+
+  .learn-more:hover {
+    text-decoration: underline;
+  }
+
+  .welcome-box {
+    margin-bottom: 2rem;
+    text-align: left;
+  }
+
+  .welcome-box h2 {
+    font-weight: 700;
+  }
+
+  .welcome-box p {
+    font-size: 0.95rem;
+    opacity: 0.8;
+  }
+
+</style>
+<body style="background-color: #303030">
+    <?php require 'src/navbar.php' ?>
+    <section class="container py-4">
+        <div class="welcome-box mb-4 text-white">
+            <h2>Welcome, <?= htmlspecialchars($username) ?></h2>
+            <p>
+                <i class="bi bi-person-circle"></i> Role: <?= htmlspecialchars($role) ?> |
+                <i class="bi bi-clock"></i> <span id="server-time"><?= $server_datetime ?></span>
+            </p>
+
+        </div>
+
+        <div class="row g-4">
+            <div class="col-lg-8">
+                <div class="row row-cols-2 row-cols-md-3 g-4">
+                <div class="col"><div class="dashboard-card text-center"><i class="bi bi-trophy-fill text-warning fs-2"></i><h5>Total Leagues</h5><h2><?= $total_leagues ?></h2><a href="tournament" class="learn-more">Learn More →</a></div></div>
+                <div class="col"><div class="dashboard-card text-center"><i class="bi bi-geo-alt-fill text-danger fs-2"></i><h5>Total Zones</h5><h2><?= $total_zones ?></h2><a href="tournament" class="learn-more">Learn More →</a></div></div>
+                <div class="col"><div class="dashboard-card text-center"><i class="bi bi-newspaper text-primary fs-2"></i><h5>Total News</h5><h2><?= $total_news ?></h2><a href="news" class="learn-more">Learn More →</a></div></div>
+                <div class="col"><div class="dashboard-card text-center"><span class="iconify text-success" data-icon="mdi:tennis" style="font-size:50px;"></span>
+                <h5>Total Matches</h5><h2><?= $total_matches ?></h2><a href="match" class="learn-more">Learn More →</a></div></div>
+                <div class="col"><div class="dashboard-card text-center"><i class="bi bi-cash-coin text-warning fs-2"></i><h5>Total Sponsors</h5><h2><?= $total_sponsors ?></h2><a href="sponsors" class="learn-more">Learn More →</a></div></div>
+                <div class="col"><div class="dashboard-card text-center"><i class="bi bi-people-fill text-info fs-2"></i><h5>Total Teams</h5><h2><?= $total_teams ?></h2><a href="team" class="learn-more">Learn More →</a></div></div>
+                <div class="col"><div class="dashboard-card text-center"><i class="bi bi-building text-secondary fs-2"></i><h5>Total Clubs</h5><h2><?= $total_clubs ?></h2><a href="club/club" class="learn-more">Learn More →</a></div></div>
+                <div class="col"><div class="dashboard-card text-center"><i class="bi bi-person-badge text-dark fs-2"></i><h5>Total Players</h5><h2><?= $total_players ?></h2><a href="players" class="learn-more">Learn More →</a></div></div>
+                <div class="col"><div class="dashboard-card text-center"><i class="bi bi-check-circle-fill text-success fs-2"></i><h5>Completed Matches</h5><h2><?= $total_completed_matches ?></h2><a href="pair" class="learn-more">Learn More →</a></div></div>
+            </div>
+        </div>
+    
+        <div class="col-lg-4">
+            <div class="dashboard-card mb-4">
+                <h5><i class="bi bi-calendar-event text-warning"></i> Next Match</h5>
+                <?php if($next_match): ?>
+                    <p class="mt-2"><strong>#<?= $next_match['id'] ?></strong> - <?= htmlspecialchars($next_match['team1_name']) ?> 
+                        vs <?= htmlspecialchars($next_match['team2_name']) ?></p>
+                    <p><i class="bi bi-trophy"></i> <?= htmlspecialchars($next_match['tournament_name']) ?>  (Journey: <?= $next_match['journey'] ?>)</p>
+                    <p><i class="bi bi-clock"></i> <?= date('d M Y H:i', strtotime($next_match['scheduled_date'])) ?></p>
+                <?php else: ?>
+                <p class="text-muted">No upcoming matches</p>
+                <?php endif; ?>
+            </div>
+    
+            <div class="dashboard-card mb-4">
+                <h5><i class="bi bi-cash-stack text-success"></i> Recent Transactions</h5>
+                <table class="table table-sm mt-2">
+                  <thead>
+                    <tr><th>Team</th><th>Zone</th><th>Status</th></tr>
+                  </thead>
+                  <tbody>
+                    <?php if($transactions): foreach($transactions as $tr): ?>
+                      <tr>
+                       
+                        <td><?= htmlspecialchars($tr['team_name']) ?></td>
+                        <td><?= htmlspecialchars($tr['tournament_name']) ?></td>
+                        <td><span class="badge bg-<?= $tr['status']=='paid'?'success':($tr['status']=='pending'?'warning':'danger') ?>">
+                            <?= ucfirst($tr['status']) ?></span></td>
+                      </tr>
+                    <?php endforeach; else: ?>
+                      <tr><td colspan="4" class="text-muted">No transactions</td></tr>
+                    <?php endif; ?>
+                  </tbody>
+                </table>
+            </div>
+          
+            <div class="dashboard-card text-center"><i class="bi bi-credit-card text-primary fs-2"></i>
+                <h5>Payment Settings</h5>
+                <h2>
+                    <?php 
+                        $amountHalalah = getDynamicPaymentAmount();
+                        $amountSAR = $amountHalalah / 100;
+                        ?>
+                        SAR <?= number_format($amountSAR, 2) 
+                    ?>
+                </h2>
+                <small class="text-muted">(<?= number_format($amountHalalah) ?> halalah)</small><br></be><a href="payment_settings.php" class="learn-more">Manage →</a>
+            </div>
+        </div>
+      </div>
+    </section>
+    
+    
+    <script>
+        let serverTime = new Date("<?= $server_time ?>");
+        setInterval(() => {
+          serverTime.setSeconds(serverTime.getSeconds() + 1); 
+          const options = {
+            weekday:'long', year:'numeric', month:'long', day:'numeric',
+            hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false,
+            timeZone: "Asia/Riyadh" // 🔒 
+          };
+          document.getElementById('server-time').innerHTML =
+            `Role: <?= htmlspecialchars($role) ?> | Server Time: ${serverTime.toLocaleString('en-GB', options)}`;
+        }, 1000);
+    </script>
+    
+   
+    <button id="scrollTopBtn" title="Go to top">↑</button>
+    
+    <script>
+      const scrollBtn = document.getElementById("scrollTopBtn");
+    
+      window.onscroll = function() {
+        if (document.body.scrollTop > 200 || document.documentElement.scrollTop > 200) {
+          scrollBtn.style.display = "block";
+        } else {
+          scrollBtn.style.display = "none";
+        }
+      };
+    
+      scrollBtn.addEventListener("click", function() {
+        window.scrollTo({
+          top: 0,
+          behavior: "smooth"
+        });
+      });
+    </script>
+    
+    
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
