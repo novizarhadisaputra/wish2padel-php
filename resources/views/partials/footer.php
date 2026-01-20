@@ -1,5 +1,6 @@
 <?php
 // Ambil semua data sponsor dari database
+if (!isset($conn)) $conn = getDBConnection();
 $result = $conn->query("SELECT * FROM sponsors ORDER BY sponsor_id DESC");
 
 $premiumSponsors = [];

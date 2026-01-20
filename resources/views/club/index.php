@@ -43,7 +43,7 @@
             </div>
             
             <div class="col-md-12 text-end mb-3">
-                <a href="regis-club.php" class="btn btn-gold">Register Club</a>
+                <a href="<?= asset('regis-club') ?>" class="btn btn-gold">Register Club</a>
             </div>
         
             <div class="card shadow-lg border-0 p-3 mt-2" id="clubList">
@@ -57,7 +57,7 @@
                         <div class="col-12 col-sm-6 col-md-4 fade-in">
                             <a href="<?= asset('club-detail?id=' . $club['id']) ?>" class="text-decoration-none text-dark">
                                 <div class="border rounded p-3 h-100 text-center club-item">
-                                    <img src="uploads/club/<?= htmlspecialchars($club['logo_url']) ?>" 
+                                    <img src="<?= asset('uploads/club/' . htmlspecialchars($club['logo_url'])) ?>"
                                          alt="<?= htmlspecialchars($club['name']) ?>" 
                                          class="img-fluid mb-3"
                                          style="width:140px; height:140px; object-fit:contain;">
@@ -101,9 +101,9 @@
                         col.style.animationDelay = `${index * 0.1}s`;
             
                         col.innerHTML = `
-                            <a href="club-detail?id=${club.id}" class="text-decoration-none text-dark">
+                            <a href="<?= asset('club-detail') ?>?id=${club.id}" class="text-decoration-none text-dark">
                                 <div class="border rounded p-3 h-100 text-center club-item">
-                                    <img src="uploads/club/${club.logo_url}" 
+                                    <img src="<?= asset('uploads/club/') ?>${club.logo_url}"
                                          alt="${club.name}" 
                                          class="img-fluid mb-3"
                                          style="width:140px; height:140px; object-fit:contain;">

@@ -1,6 +1,9 @@
 <nav id="maiavbar" class="navbar navbar-expand-lg">
   <div class="container-fluid">
-    <?php $username = $_SESSION['username'] ?? null; ?>
+    <?php
+    $username = $_SESSION['username'] ?? null;
+    if (!isset($conn)) $conn = getDBConnection();
+    ?>
     <a class="navbar-brand" href="<?= asset('/') ?>">
       <img
         src="<?= asset('assets/image/w2p.png') ?>"
@@ -294,7 +297,7 @@ if (brand) {
     }
 
     try {
-      const res = await fetch("/proxy.php", {
+      const res = await fetch("<?= asset('proxy.php') ?>", {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: "text=" + encodeURIComponent(original)

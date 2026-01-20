@@ -42,6 +42,7 @@ class ClubController
         $schedules = $conn->query("SELECT * FROM schedules WHERE center_id = $center_id");
         $photos = $conn->query("SELECT * FROM photos WHERE center_id = $center_id");
         
+        view('club.show', compact('center', 'pistas', 'schedules', 'photos'));
     }
 
     public function register()

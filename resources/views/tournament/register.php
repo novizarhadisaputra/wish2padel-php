@@ -1,254 +1,3 @@
-<?php
-session_start();
-require 'config.php';
-require_once 'SimplePaymentSystem.php';
-
-$conn = getDBConnection();
-$username = $_SESSION['username'] ?? null;
-$current_page = basename($_SERVER['PHP_SELF']);
-$tournament_id = isset($_GET['tournament_id']) ? (int) $_GET['tournament_id'] : null;
-$current_step = $_GET['step'] ?? 'registration';
-
-date_default_timezone_set("Asia/Riyadh");
-$now = date("Y-m-d H:i:s");
-
-$tournament = null;
-$centers = [];
-$payment_data = null;
-$error = '';
-$success = '';
-$team_already_paid = false;
-$team_payment_info = null;
-
-// Check if user is logged in and get team ID
-$team_id = null;
-if ($username) {
-    $stmt = $conn->prepare("SELECT team_id FROM team_account WHERE username = ?");
-    $stmt->bind_param("s", $username);
-    $stmt->execute();
-    $result = $stmt->get_result()->fetch_assoc();
-    if ($result) {
-        $team_id = $result['team_id'];
-    }
-    $stmt->close();
-}
-
-// Check if team has already paid for this tournament
-if ($team_id && $tournament_id) {
-    $paymentSystem = new SimplePaymentSystem();
-    $team_already_paid = $paymentSystem->isTeamPaid($team_id, $tournament_id);
-
-    if ($team_already_paid) {
-        $team_payment_info = $paymentSystem->getTeamPaymentInfo($team_id, $tournament_id);
-    }
-}
-
-// Check if we're on payment step
-$show_payment = ($current_step === 'payment' && !empty($_SESSION['temp_registration_data']) && !$team_already_paid);
-
-if ($tournament_id) {
-    // Get tournament data
-    $stmt = $conn->prepare("SELECT id, name, description FROM tournaments WHERE id = ?");
-    $stmt->bind_param("i", $tournament_id);
-    $stmt->execute();
-    $tournament = $stmt->get_result()->fetch_assoc();
-
-    // Get centers for the tournament zone
-    if ($tournament) {
-        $zoneName = $tournament['name'];
-        $stmt = $conn->prepare("SELECT id, name FROM centers WHERE zone = ?");
-        $stmt->bind_param("s", $zoneName);
-        $stmt->execute();
-        $centers = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
-    }
-}
-
-// If showing payment, prepare data for form (no API call needed)
-if ($show_payment) {
-    try {
-        $temp_data = $_SESSION['temp_registration_data'];
-
-        // Just prepare the form data, no API call yet
-        $payment_data = [
-            'status' => 'success',
-            'team_name' => $temp_data['team_name'],
-            'captain_name' => $temp_data['captain_name'],
-            'amount' => getDynamicPaymentAmount(),
-            'currency' => getDynamicPaymentCurrency()
-        ];
-    } catch (Exception $e) {
-        $error = "Payment initialization error: " . $e->getMessage();
-        error_log("Payment initialization error: " . $e->getMessage());
-    }
-}
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    try {
-        // Validate input
-        $team_name = trim($_POST['team_name']);
-        $username = trim($_POST['username']);
-        $password = $_POST['password'];
-
-        if (empty($team_name) || empty($username) || empty($password)) {
-            throw new Exception("Team name, username, and password are required.");
-        }
-
-        // Check if username already exists
-        $stmt = $conn->prepare("SELECT id FROM team_account WHERE username = ?");
-        $stmt->bind_param("s", $username);
-        $stmt->execute();
-        if ($stmt->get_result()->fetch_assoc()) {
-            throw new Exception("Username already exists. Please choose a different username.");
-        }
-        $stmt->close();
-
-        // Check if team name already exists
-        $stmt = $conn->prepare("SELECT id FROM team_info WHERE team_name = ?");
-        $stmt->bind_param("s", $team_name);
-        $stmt->execute();
-        if ($stmt->get_result()->fetch_assoc()) {
-            throw new Exception("Team name already exists. Please choose a different team name.");
-        }
-        $stmt->close();
-
-        // Start transaction to create account without payment
-        $conn->autocommit(FALSE);
-
-        // Step 1 - team_info
-        $stmt = $conn->prepare("INSERT INTO team_info 
-            (team_name, captain_name, captain_phone, captain_email, tournament_id, created_at) 
-            VALUES (?, ?, ?, ?, ?, ?)");
-        $stmt->bind_param(
-            "ssisss",
-            $team_name,
-            $_POST['captain_name'],
-            $_POST['captain_phone'],
-            $_POST['captain_email'],
-            $tournament_id,
-            $now
-        );
-        $stmt->execute();
-        $new_team_id = $conn->insert_id;
-        $stmt->close();
-
-
-        // Step 2 - team_members_info
-        $stmt = $conn->prepare("INSERT INTO team_members_info 
-            (team_id, player_name, role) 
-            VALUES (?, ?, ?)");
-
-        // Insert Captain sebagai anggota dengan role captain
-        $captain_role = 'captain';
-        $stmt->bind_param("iss", $new_team_id, $_POST['captain_name'], $captain_role);
-        $stmt->execute();
-
-        // Insert player lain
-        foreach ($_POST['player_name'] as $pname) {
-            if (!empty(trim($pname))) {
-                $role = 'player';
-                $stmt->bind_param("iss", $new_team_id, trim($pname), $role);
-                $stmt->execute();
-            }
-        }
-
-        $stmt->close();
-
-
-
-        // Step 3 - team_contact_details
-        $stmt = $conn->prepare("INSERT INTO team_contact_details 
-            (team_id, contact_phone, contact_email, club, city, level, notes) 
-            VALUES (?, ?, ?, ?, ?, ?, ?)");
-        $stmt->bind_param(
-            "issssss",
-            $new_team_id,
-            $_POST['contact_phone'],
-            $_POST['contact_email'],
-            $_POST['club'],
-            $_POST['city'],
-            $_POST['level'],
-            $_POST['notes']
-        );
-        $stmt->execute();
-        $stmt->close();
-
-        $stmt = $conn->prepare("INSERT INTO team_experience 
-            (team_id, experience, competed, regional) 
-            VALUES (?, ?, ?, ?)");
-        $stmt->bind_param(
-            "isss",
-            $new_team_id,
-            $_POST['experience'],
-            $_POST['competed'],
-            $_POST['regional']
-        );
-        $stmt->execute();
-        $stmt->close();
-
-
-        // Step 4 - team_account
-        $password_hash = password_hash($password, PASSWORD_DEFAULT);
-        $stmt = $conn->prepare("INSERT INTO team_account 
-            (team_id, username, password_hash, created_at) 
-            VALUES (?, ?, ?, ?)");
-        $stmt->bind_param("isss", $new_team_id, $username, $password_hash, $now);
-        $stmt->execute();
-        $stmt->close();
-
-        $conn->commit();
-
-        // Auto-login: Regenerate session ID for security
-        session_regenerate_id(true);
-
-        // Set session data like login_process.php
-        $_SESSION['username'] = $username;
-        $_SESSION['team_id'] = $new_team_id;
-        $_SESSION['payment_status'] = 'unpaid';
-        $_SESSION['payment_paid'] = false;
-
-        // Redirect to payment for this tournament with success message
-        $success = "Account created successfully! You are now logged in. Complete payment to activate your tournament registration.";
-        header("Location: payment.php?team_id={$new_team_id}&tournament_id={$tournament_id}&status=new_account");
-        exit;
-    } catch (Exception $e) {
-        $conn->rollback();
-        $conn->autocommit(TRUE); // Reset autocommit
-
-        // Enhanced error logging with more context
-        $error_context = [
-            'error_message' => $e->getMessage(),
-            'error_file' => $e->getFile(),
-            'error_line' => $e->getLine(),
-            'tournament_id' => $tournament_id,
-            'team_name' => $_POST['team_name'] ?? 'N/A',
-            'username' => $_POST['username'] ?? 'N/A',
-            'timestamp' => date('Y-m-d H:i:s')
-        ];
-
-        error_log("Registration error - Full context: " . json_encode($error_context));
-
-        // User-friendly error message
-        $error = "Account creation failed: " . $e->getMessage() . ". Please check your information and try again. If the problem persists, contact support.";
-
-        // Add JavaScript alert for immediate feedback
-        echo "<script>";
-        echo "document.addEventListener('DOMContentLoaded', function() {";
-        echo "    alert('Registration Error: " . addslashes($e->getMessage()) . "');";
-        echo "    console.error('Registration failed:', " . json_encode($error_context) . ");";
-        echo "});";
-        echo "</script>";
-    }
-}
-if (isset($_GET['check_username'])) {
-    $username = trim($_GET['check_username']);
-    $stmt = $conn->prepare("SELECT id FROM team_account WHERE username = ?");
-    $stmt->bind_param("s", $username);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    echo json_encode(["exists" => $result->fetch_assoc() ? true : false]);
-    exit;
-}
-?>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -503,7 +252,7 @@ if (isset($_GET['check_username'])) {
 </head>
 
 <body>
-    <?php require 'src/navbar.php' ?>
+    <?php view('partials.navbar'); ?>
 
     <?php if ($show_payment): ?>
         <!-- Payment Step with Gold/Black/White Theme -->
@@ -521,7 +270,7 @@ if (isset($_GET['check_username'])) {
                         <?php if ($error): ?>
                             <div class="payment-alert-danger">
                                 <i class="bi bi-exclamation-triangle me-2"></i><?= htmlspecialchars($error) ?>
-                                <br><a href="tournament_regis.php?tournament_id=<?= $tournament_id ?>" class="btn payment-btn-secondary mt-2">Go Back to Registration</a>
+                                <br><a href="<?= asset('tournament-register') ?>?tournament_id=<?= $tournament_id ?>" class="btn payment-btn-secondary mt-2">Go Back to Registration</a>
                             </div>
                         <?php elseif ($payment_data): ?>
                             <!-- Payment Details Card -->
@@ -554,7 +303,7 @@ if (isset($_GET['check_username'])) {
                                     <i class="bi bi-credit-card"></i>Payment Information
                                 </h5>
 
-                                <form id="payment-form" method="POST" action="payment_verify_integrated.php">
+                                <form id="payment-form" method="POST" action="<?= asset('payment/verify') ?>">
                                     <input type="hidden" name="tournament_id" value="<?= $tournament_id ?>">
 
                                     <div class="row">
@@ -612,7 +361,7 @@ if (isset($_GET['check_username'])) {
 
                                     <div class="row">
                                         <div class="col-md-6 mb-3">
-                                            <a href="tournament_regis.php?tournament_id=<?= $tournament_id ?>" class="btn payment-btn-secondary w-100">
+                                            <a href="<?= asset('tournament-register') ?>?tournament_id=<?= $tournament_id ?>" class="btn payment-btn-secondary w-100">
                                                 <i class="bi bi-arrow-left me-2"></i>Back to Registration
                                             </a>
                                         </div>
@@ -674,7 +423,7 @@ if (isset($_GET['check_username'])) {
                         year: formData.get('expiry_year'),
                         cvc: formData.get('cvc')
                     },
-                    callback_url: window.location.protocol + '//' + window.location.host + '/payment_verify_integrated.php?tournament_id=<?= $tournament_id ?>',
+                    callback_url: window.location.protocol + '//' + window.location.host + '<?= asset('payment/verify') ?>?tournament_id=<?= $tournament_id ?>',
                     metadata: {
                         team_name: '<?= addslashes($_SESSION['temp_registration_data']['team_name']) ?>',
                         tournament_id: '<?= $tournament_id ?>'
@@ -711,7 +460,7 @@ if (isset($_GET['check_username'])) {
                         if (data.status === 'paid' || data.status === 'captured') {
                             // Payment successful, redirect to verification
                             console.log('Redirecting to verification with Payment ID:', data.id);
-                            window.location.href = 'payment_verify_integrated.php?payment_id=' + data.id + '&status=paid&tournament_id=<?= $tournament_id ?>';
+                            window.location.href = '<?= asset('payment/verify') ?>?payment_id=' + data.id + '&status=paid&tournament_id=<?= $tournament_id ?>';
                         } else if (data.status === 'failed') {
                             alert('Payment failed: ' + (data.message || 'Payment was declined'));
                             payButton.disabled = false;
@@ -723,7 +472,7 @@ if (isset($_GET['check_username'])) {
                         } else {
                             // Payment pending or other status
                             console.log('Payment pending/other status, redirecting to verification with Payment ID:', data.id);
-                            window.location.href = 'payment_verify_integrated.php?payment_id=' + data.id + '&status=' + data.status + '&tournament_id=<?= $tournament_id ?>';
+                            window.location.href = '<?= asset('payment/verify') ?>?payment_id=' + data.id + '&status=' + data.status + '&tournament_id=<?= $tournament_id ?>';
                         }
                     })
                     .catch(error => {
@@ -748,7 +497,7 @@ if (isset($_GET['check_username'])) {
                     currency: '<?= getDynamicPaymentCurrency() ?>',
                     description: 'Tournament Registration - <?= addslashes($_SESSION['temp_registration_data']['team_name']) ?>',
                     publishable_api_key: '<?= getMoyasarPublishableKey() ?>',
-                    callback_url: '<?= (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://" . $_SERVER['HTTP_HOST'] ?>/payment_verify_integrated.php?tournament_id=<?= $tournament_id ?>',
+                    callback_url: '<?= (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://" . $_SERVER['HTTP_HOST'] ?><?= asset('payment/verify') ?>?tournament_id=<?= $tournament_id ?>',
                     methods: ['creditcard']
                 });
             <?php endif; ?>
@@ -1306,7 +1055,7 @@ function validateUsernameBeforeNext() {
         <?php endif; ?>
         </div>
 
-        <?php require 'src/footer.php' ?>
+        <?php view('partials.footer'); ?>
 
         <!-- Scroll to Top Button -->
         <button id="scrollTopBtn" title="Go to top">↑</button>

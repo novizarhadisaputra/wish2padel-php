@@ -80,7 +80,7 @@ $levels = [
                         <tr class="team-row" data-level="<?= htmlspecialchars($teamLevel); ?>" 
                             style="transition: transform 0.2s ease, box-shadow 0.2s ease; cursor:pointer;">
                             <td><?= $index + 1; ?></td>
-                            <td><a href="team_profile.php?id=<?= $team['id']; ?>" style="text-decoration:none; color:#000; display:block; width:100%;"><?= htmlspecialchars($team['team_name']); ?></a></td>
+                            <td><a href="<?= asset('team_profile') ?>?id=<?= $team['id']; ?>" style="text-decoration:none; color:#000; display:block; width:100%;"><?= htmlspecialchars($team['team_name']); ?></a></td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>
