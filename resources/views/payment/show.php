@@ -1,159 +1,3 @@
-<?php
-
-/**
- * Simple Payment Page with Original Design
- * Version: 3.0 - Simplified backend, original frontend
- */
-
-// Enable error reporting
-ini_set('display_errors', 1);
-error_reporting(E_ALL);
-
-// Debug GET parameters first
-error_log("GET parameters: " . print_r($_GET, true));
-
-// Include required files
-require_once 'config.php';
-require_once 'SimplePaymentSystem.php';
-
-// Start session
-if (session_status() == PHP_SESSION_NONE) {
-    session_start();
-}
-
-// Get and validate parameters
-$team_id = isset($_GET['team_id']) ? (int)$_GET['team_id'] : 0;
-$tournament_id = isset($_GET['tournament_id']) ? (int)$_GET['tournament_id'] : 1;
-
-// Debug parsed parameters
-error_log("Parsed team_id: $team_id, tournament_id: $tournament_id");
-
-// Initialize variables
-$error = '';
-$success = '';
-$payment_data = null;
-$team = null;
-$tournament = null;
-
-// Validate required parameters FIRST
-if ($team_id <= 0 || $tournament_id <= 0) {
-    $error = "Missing required parameters. Please access this page through proper registration flow.";
-} else {
-    try {
-        // Use SimplePaymentSystem for proper payment handling
-        $paymentSystem = new SimplePaymentSystem();
-        $conn = getDBConnection();
-
-        // Get team info
-        $stmt = getDBConnection()->prepare("SELECT team_name, captain_name, captain_email, captain_phone FROM team_info WHERE id = ? AND tournament_id = ?");
-        $stmt->bind_param("ii", $team_id, $tournament_id);
-        $stmt->execute();
-        $team = $stmt->get_result()->fetch_assoc();
-        $stmt->close();
-
-        if (!$team) {
-            // Team not found for this tournament
-            throw new Exception("Team not found for this tournament. Please complete registration first.");
-        }
-
-        // Check if team account exists
-        $stmt = getDBConnection()->prepare("SELECT username FROM team_account WHERE team_id = ?");
-        $stmt->bind_param("i", $team_id);
-        $stmt->execute();
-        $account_result = $stmt->get_result()->fetch_assoc();
-        $stmt->close();
-
-        $has_account = !empty($account_result);
-        error_log("Team $team_id has account: " . ($has_account ? 'YES' : 'NO'));
-
-        // Get tournament info
-        $stmt = getDBConnection()->prepare("SELECT * FROM tournaments WHERE id = ?");
-        $stmt->bind_param("i", $tournament_id);
-        $stmt->execute();
-        $tournament = $stmt->get_result()->fetch_assoc();
-        $stmt->close();
-
-        if (!$tournament) {
-            throw new Exception("Tournament not found");
-        }
-
-        // Check current payment status using SimplePaymentSystem
-        $is_team_paid = $paymentSystem->isTeamPaid($team_id, $tournament_id);
-
-        if ($is_team_paid) {
-            // Team has already paid, show success message with payment details
-            $payment_info = $paymentSystem->getTeamPaymentInfo($team_id, $tournament_id);
-            if ($has_account) {
-                $success = "Your team has already completed payment for this tournament and has an active account.";
-            } else {
-                $success = "Your team has already completed payment for this tournament.";
-            }
-            $payment_data = [
-                'status' => 'already_paid',
-                'payment_id' => $payment_info['payment_id'] ?? 'N/A',
-                'amount' => getDynamicPaymentAmount(),
-                'currency' => getDynamicPaymentCurrency(),
-                'paid_date' => $payment_info['created_at'] ?? null,
-                'team_name' => $team['team_name'] ?? 'Unknown Team',
-                'has_account' => $has_account
-            ];
-        } else {
-            // Team hasn't paid yet
-            if ($has_account) {
-                // Team has account but hasn't paid - they need to pay to complete registration
-                error_log("Team $team_id has account but hasn't paid - requires payment");
-            } else {
-                // Team doesn't have account and hasn't paid - normal flow
-                error_log("Team $team_id doesn't have account and hasn't paid - normal registration flow");
-            }
-
-            // Prepare payment form (NO database insertion until actual payment)
-            $payment_result = $paymentSystem->preparePaymentForm($team_id, $tournament_id);
-
-            if ($payment_result['status'] === 'success') {
-                $payment_data = $payment_result;
-                $payment_data['has_account'] = $has_account;
-
-                if ($has_account) {
-                    $payment_data['message'] = "Complete your payment to activate your team account for this tournament.";
-                } else {
-                    $payment_data['message'] = "Complete your payment to register for this tournament.";
-                }
-            } elseif ($payment_result['status'] === 'already_paid') {
-                $success = $payment_result['message'];
-                // Get payment info for display
-                $payment_info = null; // Emergency: Skip payment info for now
-                $payment_data = [
-                    'status' => 'already_paid',
-                    'payment_id' => $payment_info['payment_id'] ?? 'N/A',
-                    'amount' => getDynamicPaymentAmount(),
-                    'currency' => getDynamicPaymentCurrency(),
-                    'paid_date' => $payment_info['created_at'] ?? null,
-                    'team_name' => $team['team_name'] ?? 'Unknown Team',
-                    'has_account' => $has_account
-                ];
-            } else {
-                $error = $payment_result['message'] ?? 'Failed to create payment';
-            }
-        }
-    } catch (Exception $e) {
-        $error = "Database error: " . $e->getMessage();
-        error_log("Payment page error: " . $e->getMessage());
-    }
-}
-
-// Debug final state
-error_log("Final state - payment_data: " . ($payment_data ? 'YES' : 'NO') . ", team_id: $team_id, tournament_id: $tournament_id, error: '$error', success: '$success'");
-if ($payment_data) {
-    error_log("Payment data contents: " . print_r($payment_data, true));
-}
-
-// Check URL parameters for status display
-$url_status = $_GET['status'] ?? null;
-$url_error = $_GET['error'] ?? null;
-
-?>
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -161,9 +5,9 @@ $url_error = $_GET['error'] ?? null;
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tournament Payment - Wish2Padel</title>
-    <link rel="icon" type="image/png" sizes="32x32" href="https://www.wish2padel.com/assets/image/w2p logo.jpeg">
-        <link rel="icon" type="image/png" sizes="16x16" href="https://www.wish2padel.com/assets/image/w2p logo.jpeg">
-        <link rel="apple-touch-icon" href="https://www.wish2padel.com/assets/image/w2p logo.jpeg">
+    <link rel="icon" type="image/png" sizes="32x32" href="<?= asset('assets/image/w2p logo.jpeg') ?>">
+        <link rel="icon" type="image/png" sizes="16x16" href="<?= asset('assets/image/w2p logo.jpeg') ?>">
+        <link rel="apple-touch-icon" href="<?= asset('assets/image/w2p logo.jpeg') ?>">
 
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -173,7 +17,7 @@ $url_error = $_GET['error'] ?? null;
     <link rel="stylesheet" href="https://cdn.moyasar.com/mpf/1.14.0/moyasar.css">
 
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="assets/css/stylee.css?v=12">
+    <link rel="stylesheet" href="<?= asset('assets/css/stylee.css?v=12') ?>">
 
     <style>
         /* Payment Page - Gold/Black/White Theme (Streamlined) */
@@ -477,7 +321,7 @@ $url_error = $_GET['error'] ?? null;
                         </div>
                     </div>
                     <div class="text-center">
-                        <a href="tournament.php" class="btn btn-primary">
+                        <a href="<?= asset('tournament') ?>" class="btn btn-primary">
                             <i class="bi bi-arrow-left me-2"></i>Back to Tournament
                         </a>
                     </div>
@@ -516,10 +360,10 @@ $url_error = $_GET['error'] ?? null;
                             </div>
                         </div>
                         <div class="text-center">
-                            <a href="myteam.php" class="btn btn-success btn-lg me-2">
+                            <a href="<?= asset('myteam') ?>" class="btn btn-success btn-lg me-2">
                                 <i class="bi bi-house me-2 mb-2"></i>Go to My Team
                             </a>
-                            <a href="tournament.php" class="btn btn-outline-primary mt-4">
+                            <a href="<?= asset('tournament') ?>" class="btn btn-outline-primary mt-4">
                                 <i class="bi bi-trophy me-2 mt-2"></i>View Tournaments
                             </a>
                         </div>
@@ -533,7 +377,7 @@ $url_error = $_GET['error'] ?? null;
                             </div>
                         </div>
                         <div class="text-center">
-                            <a href="dashboard.php" class="btn btn-gold">
+                            <a href="<?= asset('dashboard') ?>" class="btn btn-gold">
                                 <i class="bi bi-house me-2 mb-2"></i>Go to Dashboard
                             </a>
                         </div>
@@ -566,7 +410,7 @@ $url_error = $_GET['error'] ?? null;
 
                             <div class="info-row">
                                 <span class="info-label">Registration Fee</span>
-                                <span class="info-value"><?= getDynamicPaymentAmount() ?> SAR</span>
+                                <span class="info-value"><?= $amount ?> SAR</span>
                             </div>
                         </div>
                         <!-- Payment Form -->
@@ -592,11 +436,6 @@ $url_error = $_GET['error'] ?? null;
 
                     </div>
 
-                    <!-- Amount Display -->
-                    <!-- <div class="amount-display">
-                    <?=getDynamicPaymentAmount() ?>.00 SAR
-                </div> -->
-
                     <!-- Payment Messages -->
                     <div id="payment-messages"></div>
 
@@ -608,7 +447,7 @@ $url_error = $_GET['error'] ?? null;
                         </h6>
                         <p class="mb-2">Please check your connection and try again.</p>
                         <div class="text-center">
-                            <a href="regis.php" class="btn btn-primary">
+                            <a href="<?= asset('regis') ?>" class="btn btn-primary">
                                 <i class="bi bi-arrow-left me-2"></i>Back to Registration
                             </a>
                         </div>
@@ -626,43 +465,23 @@ $url_error = $_GET['error'] ?? null;
     <script src="https://cdn.moyasar.com/mpf/1.14.0/moyasar.js"></script>
 
     <?php
-    // Debug kondisi untuk JavaScript - FINAL CHECK
-    $get_team_id = (int)($_GET['team_id'] ?? 0);
-    $get_tournament_id = (int)($_GET['tournament_id'] ?? 1);
-
-    error_log("FINAL CHECK before JS condition: GET team_id=$get_team_id, GET tournament_id=$get_tournament_id, payment_data=" . ($payment_data ? 'YES' : 'NO'));
-
-    $js_condition = ($payment_data && $get_team_id > 0 && $get_tournament_id > 0);
-    error_log("JavaScript condition check: payment_data=" . ($payment_data ? 'true' : 'false') . ", GET team_id=$get_team_id, GET tournament_id=$get_tournament_id, result=" . ($js_condition ? 'PASS' : 'FAIL'));
+    $js_condition = ($payment_data && $team_id > 0 && $tournament_id > 0);
     ?>
 
     <?php if ($js_condition): ?>
 
 
         <script>
-            // // Force immediate console log - SHOULD APPEAR NOW
-            // // console.log('🔥 SCRIPT LOADED - payment.php - CONDITIONS MET');
-            // // console.log('🔥 Raw GET values: team_id=<?= $_GET['team_id'] ?? 'NOT_SET' ?>, tournament_id=<?= $_GET['tournament_id'] ?? 'NOT_SET' ?>');
-            // // console.log('🔥 PHP values: team_id=<?= $team_id ?>, tournament_id=<?= $tournament_id ?>');
-            // // console.log('🔥 Checking conditions: payment_data=', <?= json_encode($payment_data ? true : false) ?>);
-
-            // // Debug payment data
-            // // console.log('💾 Payment Data:', <?= json_encode($payment_data) ?>);
-            // // console.log('👥 Team Data:', <?= json_encode($team) ?>);
-            // // console.log('🏆 Tournament Data:', <?= json_encode($tournament) ?>);
-
-            // Payment configuration - USE $_GET directly to avoid scope issues
+            // Payment configuration
             const PaymentConfig = {
-                teamId: <?= json_encode((int)($_GET['team_id'] ?? 0)) ?>,
-                tournamentId: <?= json_encode((int)($_GET['tournament_id'] ?? 1)) ?>,
+                teamId: <?= json_encode($team_id) ?>,
+                tournamentId: <?= json_encode($tournament_id) ?>,
                 amount: <?= json_encode($payment_data['amount']) ?>,
                 currency: <?= json_encode($payment_data['currency']) ?>,
                 publishableKey: <?= json_encode($payment_data['publishable_key']) ?>,
                 teamName: <?= json_encode($team['team_name'] ?? 'Unknown Team') ?>,
-                callbackUrl: <?= json_encode('payment_verify_existing.php?team_id=' . ($_GET['team_id'] ?? 0) . '&tournament_id=' . ($_GET['tournament_id'] ?? 1)) ?>
+                callbackUrl: <?= json_encode(asset('payment/verify?team_id=' . $team_id . '&tournament_id=' . $tournament_id)) ?>
             };
-
-            // // console.log('🚀 Payment Config:', PaymentConfig);
 
             // Initialize payment form when DOM is ready
             document.addEventListener('DOMContentLoaded', function() {
@@ -689,7 +508,7 @@ $url_error = $_GET['error'] ?? null;
                     currency: PaymentConfig.currency,
                     description: PaymentConfig.teamName + ' - Tournament Registration',
                     publishable_api_key: PaymentConfig.publishableKey,
-                    callback_url: window.location.origin + '/' + PaymentConfig.callbackUrl,
+                    callback_url: PaymentConfig.callbackUrl, // Use fully qualified URL from PHP
                     methods: methods,
                     apple_pay: {
                         label: 'Padel League Registration',
@@ -731,28 +550,7 @@ $url_error = $_GET['error'] ?? null;
                     </div>
                 </div>
             `;
-
-                // console.log(`📢 Message [${type}]: ${message}`);
             }
-        </script>
-    <?php else: ?>
-        <!-- Condition NOT MET - Debug Section -->
-        <!-- <div style="background: #ffebee; padding: 1rem; margin: 1rem; border: 1px solid #f44336;">
-        <h6>DEBUG: JavaScript Condition NOT MET</h6>
-        <p><strong>Payment Data:</strong> <?= $payment_data ? 'Available' : 'NOT AVAILABLE' ?></p>
-        <p><strong>Team ID:</strong> <?= $team_id ?: 'EMPTY/NULL' ?></p>
-        <p><strong>Tournament ID:</strong> <?= $tournament_id ?: 'EMPTY/NULL' ?></p>
-        <p><strong>Error:</strong> <?= $error ?: 'No error' ?></p>
-        <p><strong>Success:</strong> <?= $success ?: 'No success message' ?></p>
-    </div> -->
-
-        <script>
-            // console.log('❌ JavaScript condition NOT met');
-            // console.log('❌ payment_data:', <?= json_encode($payment_data) ?>);
-            // console.log('❌ team_id:', <?= json_encode($team_id) ?>);
-            // console.log('❌ tournament_id:', <?= json_encode($tournament_id) ?>);
-            // console.log('❌ error:', <?= json_encode($error) ?>);
-            // console.log('❌ success:', <?= json_encode($success) ?>);
         </script>
     <?php endif; ?>
 </body>
