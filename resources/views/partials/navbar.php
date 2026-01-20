@@ -104,7 +104,7 @@
               <div class="col-6 col-md-3">
                 <h6>About League</h6>
                 <a class="dropdown-item" href="<?= asset('about-league') ?>">Presentation</a>
-                <!--<a class="dropdown-item" href="document">Documents</a>-->
+                <a class="dropdown-item" href="<?= asset('documents') ?>">Documents</a>
               </div>
               <div class="col-6 col-md-3">
                 <h6>League</h6>
@@ -177,25 +177,20 @@ if ($result->num_rows > 0) {
         <?php endif; ?>
 
         <li class="nav-item">
-          <a href="<?= asset('regis') ?>" class="btn btn-gold">Regist Team</a>
-        </li>
-        <li class="nav-item">
-          <a href="<?= asset('regis-club') ?>" class="btn btn-gold ms-2">Regist Club</a>
+          <a class="nav-link" href="<?= asset('regis') ?>">Register Team</a>
         </li>
 
         <li class="nav-item">
           <a class="nav-link" href="<?= asset('club') ?>">Club</a>
         </li>
 
-        <?php if (empty($_SESSION['team_id'])): ?>
-          <li class="nav-item">
-            <a class="nav-link" href="<?= asset('news') ?>">News</a>
-          </li>
+        <li class="nav-item">
+          <a class="nav-link" href="<?= asset('news') ?>">News</a>
+        </li>
 
-          <li class="nav-item">
-            <a class="nav-link" href="<?= asset('media/gallery') ?>">Media</a>
-          </li>
-        <?php endif ?>
+        <li class="nav-item">
+          <a class="nav-link" href="<?= asset('media/gallery') ?>">Media</a>
+        </li>
 
         <li class="nav-item">
           <a class="nav-link" href="<?= asset('sponsor') ?>">Sponsors</a>
