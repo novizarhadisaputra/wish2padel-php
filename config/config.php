@@ -62,6 +62,10 @@ if (!function_exists('getMoyasarPublishableKey')) {
     function getMoyasarPublishableKey() { return 'pk_test_1234567890'; }
 }
 
+if (!function_exists('getMoyasarSecretKey')) {
+    function getMoyasarSecretKey() { return 'sk_test_1234567890'; }
+}
+
 if (!function_exists('getFormattedPaymentAmount')) {
     function getFormattedPaymentAmount() {
         return (getDynamicPaymentAmount() / 100) . ' ' . getDynamicPaymentCurrency();
