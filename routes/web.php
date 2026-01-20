@@ -28,6 +28,15 @@ Router::get('/news-detail', 'PageController@newsDetail');
 Router::get('/match', 'MatchController@show');
 Router::get('/team_profile', 'TeamController@profile');
 
+// New Migrated Routes
+Router::get('/leaderboard', 'LeagueController@leaderboard');
+Router::get('/ranking', 'LeagueController@ranking');
+Router::get('/documents', 'PageController@documents');
+Router::get('/register-player', 'PlayerController@register');
+Router::post('/register-player', 'PlayerController@register');
+Router::get('/payment', 'PaymentController@show');
+Router::get('/payment/verify', 'PaymentController@verify');
+
 // Dashboard & Team Routes
 Router::get('/dashboard', 'DashboardController@index');
 Router::get('/league', 'LeagueController@hub');

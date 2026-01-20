@@ -58,4 +58,23 @@ class PageController
         
         view('pages.sponsors', compact('premiumSponsors', 'standardSponsors', 'resultCollaborators'));
     }
+
+    public function documents()
+    {
+        $conn = getDBConnection();
+        $query = "SELECT id, file_path FROM documents ORDER BY id ASC";
+        $result = mysqli_query($conn, $query);
+
+        $section1 = [];
+        $section2 = [];
+
+        while ($row = mysqli_fetch_assoc($result)) {
+            if ($row['id'] <= 2) {
+                $section1[] = $row;
+            } else {
+                $section2[] = $row;
+            }
+        }
+        view('pages.documents', compact('section1', 'section2'));
+    }
 }

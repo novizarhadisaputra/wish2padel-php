@@ -1,74 +1,20 @@
-<?php
-session_start();
-require 'config.php';
-
-$conn = getDBConnection();
-$username = $_SESSION['username'] ?? null;
-$current_page = basename($_SERVER['PHP_SELF']);
-
-date_default_timezone_set('Asia/Riyadh');
-
-$centers = $conn->query("SELECT id, name FROM centers ORDER BY name ASC")->fetch_all(MYSQLI_ASSOC);
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $full_name = trim($_POST['full_name']);
-    $phone     = trim($_POST['phone']);
-    $email     = trim($_POST['email']);
-    $gender    = $_POST['gender'];
-    $address   = trim($_POST['address']);
-    $center_id = $_POST['center_id'];
-
-    $errors = [];
-    if (empty($full_name)) $errors[] = "Full Name is required.";
-    if (empty($phone)) $errors[] = "Phone Number is required.";
-    if (empty($email)) $errors[] = "Email is required.";
-    if (empty($gender)) $errors[] = "Gender is required.";
-    if (empty($address)) $errors[] = "Address is required.";
-    if (empty($center_id)) $errors[] = "Club selection is required.";
-
-    if (empty($errors)) {
-        // Ambil timestamp Riyadh
-        $created_at = date('Y-m-d H:i:s');
-    
-        $stmt = $conn->prepare("
-            INSERT INTO individuals (full_name, phone, email, gender, address, center_id, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-        ");
-        $stmt->bind_param("sssssis", $full_name, $phone, $email, $gender, $address, $center_id, $created_at);
-    
-        if ($stmt->execute()) {
-            echo "<script>
-                    alert('Your registration was successful. The club will contact you if they form a team.');
-                    window.location.href = 'index.php';
-                  </script>";
-            exit;
-        } else {
-            $errors[] = 'Database error: ' . $conn->error;
-        }
-    }
-
-}
-?>
-
-
-
 <!DOCTYPE html>
 <html lang="en">
     <head>
-        <link rel="icon" type="image/png" sizes="32x32" href="https://www.wish2padel.com/assets/image/w2p logo.jpeg">
-        <link rel="icon" type="image/png" sizes="16x16" href="https://www.wish2padel.com/assets/image/w2p logo.jpeg">
-        <link rel="apple-touch-icon" href="https://www.wish2padel.com/assets/image/w2p logo.jpeg">
+        <link rel="icon" type="image/png" sizes="32x32" href="<?= asset('assets/image/w2p logo.jpeg') ?>">
+        <link rel="icon" type="image/png" sizes="16x16" href="<?= asset('assets/image/w2p logo.jpeg') ?>">
+        <link rel="apple-touch-icon" href="<?= asset('assets/image/w2p logo.jpeg') ?>">
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>Player Regist - Wish2Padel</title>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-        <link rel="stylesheet" href="assets/css/stylee.css?=v12">
+        <link rel="stylesheet" href="<?= asset('assets/css/stylee.css?=v12') ?>">
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
     </head>
     <body>
     
     
-        <?php require 'src/navbar.php' ?>
+        <?php view('partials.navbar'); ?>
     
     
         <div class="container-fluid mt-5">
@@ -85,6 +31,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <div class="alert alert-success">
                         <?= htmlspecialchars($success_msg) ?>
                     </div>
+                    <script>
+                        setTimeout(function(){
+                            window.location.href = "<?= asset('') ?>";
+                        }, 3000);
+                    </script>
                 <?php endif; ?>
         
                 <form method="POST" id="individualForm" novalidate>
@@ -139,7 +90,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </form>
             </div>
         </div>
-        <?php require 'src/footer.php' ?>
+        <?php view('partials.footer'); ?>
     
         <!-- Scroll to Top Button -->
         <button id="scrollTopBtn" title="Go to top">↑</button>

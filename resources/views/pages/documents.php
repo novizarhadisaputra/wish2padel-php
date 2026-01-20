@@ -1,26 +1,3 @@
-<?php
-session_start();
-require 'config.php';
-$conn = getDBConnection();
-$username = $_SESSION['username'] ?? null;
-$current_page = basename($_SERVER['PHP_SELF']);
-$team_id = $_SESSION['team_id'] ?? null;
-
-$query = "SELECT id, file_path FROM documents ORDER BY id ASC";
-$result = mysqli_query($conn, $query);
-
-$section1 = []; 
-$section2 = []; 
-
-while ($row = mysqli_fetch_assoc($result)) {
-    if ($row['id'] <= 2) {
-        $section1[] = $row;
-    } else {
-        $section2[] = $row;
-    }
-}
-?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -30,7 +7,7 @@ while ($row = mysqli_fetch_assoc($result)) {
   <link rel="icon" type="image/png" sizes="32x32" href="https://www.wish2padel.com/assets/image/w2p.png">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
-  <link rel="stylesheet" href="assets/css/stylee.css?v=12">
+  <link rel="stylesheet" href="<?= asset('assets/css/stylee.css?v=12') ?>">
 
   <link rel="icon" type="image/png" sizes="32x32" href="https://www.wish2padel.com/assets/image/w2p logo.jpeg">
   <link rel="icon" type="image/png" sizes="16x16" href="https://www.wish2padel.com/assets/image/w2p logo.jpeg">
@@ -79,7 +56,7 @@ while ($row = mysqli_fetch_assoc($result)) {
 </head>
 <body>
 
-<?php require 'src/navbar.php'; ?>
+<?php view('partials.navbar'); ?>
 
 <section class="document-section text-center">
   <div class="container">
@@ -92,7 +69,7 @@ while ($row = mysqli_fetch_assoc($result)) {
         <div class="col-12 col-sm-6 col-md-4 col-lg-3 fade-in d-flex">
           <div class="document-card flex-fill d-flex flex-column justify-content-between" style="min-height: 330px;">
             <div>
-              <img src="assets/image/w2p.png" alt="Document Logo">
+              <img src="<?= asset('assets/image/w2p.png') ?>" alt="Document Logo">
               <?php if ($doc['id'] == 1): ?>
                 <h5>Team Line Up</h5>
                 <p>This document is used by teams to fill in their player lineup before the match begins.</p>
@@ -123,7 +100,7 @@ while ($row = mysqli_fetch_assoc($result)) {
         <div class="col-12 col-sm-6 col-md-4 col-lg-3 fade-in d-flex">
           <div class="document-card flex-fill d-flex flex-column justify-content-between" style="min-height: 350px;">
             <div>
-              <img src="assets/image/w2p.png" alt="Document Logo">
+              <img src="<?= asset('assets/image/w2p.png') ?>" alt="Document Logo">
               <?php if ($doc['id'] == 3): ?>
                 <h5>Official League Rules</h5>
                 <p>All official league rules, gameplay regulations, and match guidelines.</p>
@@ -153,7 +130,7 @@ while ($row = mysqli_fetch_assoc($result)) {
   </div>
 </section>
 
-<?php require 'src/footer.php'; ?>
+<?php view('partials.footer'); ?>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>

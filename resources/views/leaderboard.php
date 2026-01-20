@@ -1,70 +1,20 @@
-<?php
-session_start();
-require 'config.php';
-$conn = getDBConnection();
-$username = $_SESSION['username'] ?? null;
-$current_page = basename($_SERVER['PHP_SELF']);
-?>
-
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
-  <link rel="icon" type="image/png" sizes="32x32" href="https://www.wish2padel.com/assets/image/w2p.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="https://www.wish2padel.com/assets/image/w2p.png">
-  <link rel="apple-touch-icon" href="https://www.wish2padel.com/assets/image/w2p.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="<?= asset('assets/image/w2p.png') ?>">
+  <link rel="icon" type="image/png" sizes="16x16" href="<?= asset('assets/image/w2p.png') ?>">
+  <link rel="apple-touch-icon" href="<?= asset('assets/image/w2p.png') ?>">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Leaderboard - Padel League</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="<?= asset('assets/css/style.css') ?>">
 </head>
 
 <body>
 
-  <?php require 'src/navbar.php' ?>
-
-  <?php
-  $tournament_id = 1;
-
-  // Ambil nama tournament
-  $tour_sql = "SELECT name, start_date, end_date FROM tournaments WHERE id = ?";
-  $tour_stmt = $conn->prepare($tour_sql);
-  $tour_stmt->bind_param("i", $tournament_id);
-  $tour_stmt->execute();
-  $tour_result = $tour_stmt->get_result()->fetch_assoc();
-  $tournament_name = $tour_result['name'];
-  $tournament_period = date("F Y", strtotime($tour_result['start_date'])) . " – " . date("F Y", strtotime($tour_result['end_date']));
-
-  // Ambil leaderboard
-  $sql = "
-    SELECT 
-        t.id AS team_id,
-        t.team_name,
-        COUNT(mr.id) AS P,
-        SUM(CASE WHEN mr.winner_team_id = t.id THEN 1 ELSE 0 END) AS W,
-        SUM(CASE WHEN mr.winner_team_id != t.id AND mr.winner_team_id IS NOT NULL THEN 1 ELSE 0 END) AS L,
-        COALESCE(SUM(CASE WHEN mr.winner_team_id = t.id THEN 2 ELSE 0 END), 0) AS points
-    FROM teams t
-    LEFT JOIN matches m ON t.id = m.team1_id OR t.id = m.team2_id
-    LEFT JOIN match_results mr ON m.id = mr.match_id
-    WHERE m.tournament_id = ?
-    GROUP BY t.id, t.team_name
-    ORDER BY points DESC, W DESC, t.team_name ASC
-";
-
-  $stmt = $conn->prepare($sql);
-  $stmt->bind_param("i", $tournament_id);
-  $stmt->execute();
-  $result = $stmt->get_result();
-
-  $leaderboard = [];
-  $rank = 1;
-  while ($row = $result->fetch_assoc()) {
-    $row['rank'] = $rank++;
-    $leaderboard[] = $row;
-  }
-  ?>
+  <?php view('partials.navbar'); ?>
 
   <section id="leaderboard" style="background:#f9f9f9; padding:50px 20px; font-family:Arial,sans-serif;">
     <h2 class="leaderboard-title"><?php echo htmlspecialchars($tournament_name); ?></h2>
@@ -228,7 +178,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
     });
   </script>
 
-  <?php require 'src/footer.php' ?>
+  <?php view('partials.footer'); ?>
 
   <!-- Scroll to Top Button -->
   <button id="scrollTopBtn" title="Go to top">↑</button>
