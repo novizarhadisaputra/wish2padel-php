@@ -48,6 +48,10 @@ Router::get('/scheduled', 'TeamController@scheduled');
 Router::get('/regis-club', 'ClubController@register');
 Router::post('/regis-club', 'ClubController@register');
 
+// Tournament Registration
+Router::get('/tournament-register', 'TournamentRegistrationController@index');
+Router::post('/tournament-register', 'TournamentRegistrationController@store');
+
 // Media Routes
 Router::get('/media/gallery', 'MediaController@gallery');
 Router::get('/media/categories', 'MediaController@categories');

@@ -97,7 +97,7 @@ use App\Core\SimplePaymentSystem;
                                 </small>
                             <?php endif; ?>
                         </p>
-                        <a href="payment_verify_integrated.php?payment_id=<?= $payment_info['payment_id'] ?? '' ?>&tournament_id=<?= $tournament['id'] ?>" 
+                        <a href="<?= asset('payment/verify') ?>?payment_id=<?= $payment_info['payment_id'] ?? '' ?>&tournament_id=<?= $tournament['id'] ?>"
                            class="btn btn-warning btn-sm fw-bold px-4">
                             <i class="bi bi-credit-card-fill"></i> Check Payment Status
                         </a>
@@ -114,7 +114,7 @@ use App\Core\SimplePaymentSystem;
                             Complete payment to secure your spot.<br>
                             Battle Dates: <?= $start_date->format('F j, Y') ?> – <?= $end_date->format('F j, Y') ?>
                         </p>
-                        <a href="payment.php?team_id=<?= $team_id ?>&tournament_id=<?= $tournament['id'] ?>" 
+                        <a href="<?= asset('payment') ?>?team_id=<?= $team_id ?>&tournament_id=<?= $tournament['id'] ?>"
                            class="btn btn-danger btn-sm fw-bold px-4">
                             <i class="bi bi-credit-card-fill"></i> Complete Payment
                         </a>
@@ -163,7 +163,7 @@ use App\Core\SimplePaymentSystem;
     </p>
 
     <?php if ($today <= $registration_close_date): ?>
-        <a href="tournament_regis?tournament_id=<?= $tournament['id'] ?>" class="btn btn-gold btn-sm fw-bold px-4">REGISTER</a>
+        <a href="<?= asset('tournament-register') ?>?tournament_id=<?= $tournament['id'] ?>" class="btn btn-gold btn-sm fw-bold px-4">REGISTER</a>
     <?php else: ?>
         <button class="btn btn-secondary btn-sm fw-bold px-4" disabled>REGISTRATION CLOSED</button>
     <?php endif; ?>
@@ -211,7 +211,7 @@ use App\Core\SimplePaymentSystem;
         <p class="text-silver mb-3">
           To submit your club registration, our team will assist you with the process.
         </p>
-        <a href="regis-club.php" class="btn btn-gold btn-outline-gold fw-bold px-4">Register Club</a>
+        <a href="<?= asset('regis-club') ?>" class="btn btn-gold btn-outline-gold fw-bold px-4">Register Club</a>
       </div>
     </div>
 
@@ -223,7 +223,7 @@ use App\Core\SimplePaymentSystem;
           Are you a player looking to join a league like ours but don’t have a regular club? 
           Tell us about yourself, and we will help you connect with a club where you can participate and be part of the excitement in forming a team!
         </p>
-        <a href="player.php" class="btn btn-gold btn-outline-gold fw-bold px-4">Register</a>
+        <a href="<?= asset('register-player') ?>" class="btn btn-gold btn-outline-gold fw-bold px-4">Register</a>
       </div>
     </div>
 
