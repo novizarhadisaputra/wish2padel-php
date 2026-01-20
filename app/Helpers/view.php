@@ -35,3 +35,15 @@ if (!function_exists('asset')) {
         return $base_url . '/' . $path;
     }
 }
+
+if (!function_exists('redirect')) {
+    function redirect($url)
+    {
+        if (!preg_match('/^https?:\/\//', $url)) {
+             $url = asset($url);
+        }
+
+        header("Location: " . $url);
+        exit;
+    }
+}

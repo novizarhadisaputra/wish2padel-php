@@ -10,7 +10,7 @@ declare(strict_types=1);
 
 // Ensure config is loaded for dynamic payment functions
 if (!function_exists('getDynamicPaymentAmount')) {
-    require_once __DIR__ . '/config.php';
+    require_once __DIR__ . '/../../config/config.php';
 }
 
 class SimplePaymentSystem
@@ -700,6 +700,10 @@ class SimplePaymentSystem
      */
     private function getTemporaryCallbackUrl(array $registration_data): string
     {
+        if (function_exists('asset')) {
+            return asset("payment/verify?tournament_id={$registration_data['tournament_id']}");
+        }
+
         $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
         $host = $_SERVER['HTTP_HOST'] ?? 'localhost:8000';
 
@@ -708,7 +712,7 @@ class SimplePaymentSystem
             $host = 'localhost:8000';
         }
 
-        return "{$protocol}://{$host}/payment_verify_integrated.php?tournament_id={$registration_data['tournament_id']}";
+        return "{$protocol}://{$host}/payment/verify?tournament_id={$registration_data['tournament_id']}";
     }
 
     /**
@@ -924,10 +928,22 @@ class SimplePaymentSystem
     }
 
     /**
+     * Update payment from callback (wrapper for updatePaymentStatus)
+     */
+    public function updatePaymentFromCallback($payment_id, $status, $message = '')
+    {
+        return $this->updatePaymentStatus($payment_id, $status);
+    }
+
+    /**
      * Get callback URL for payment
      */
     private function getCallbackUrl(int $team_id, int $tournament_id): string
     {
+        if (function_exists('asset')) {
+            return asset("payment/verify?team_id={$team_id}&tournament_id={$tournament_id}");
+        }
+
         $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
         $host = $_SERVER['HTTP_HOST'] ?? 'localhost:8000';
 
@@ -936,6 +952,6 @@ class SimplePaymentSystem
             $host = 'localhost:8000';
         }
 
-        return "{$protocol}://{$host}/payment_verify_simple.php?team_id={$team_id}&tournament_id={$tournament_id}";
+        return "{$protocol}://{$host}/payment/verify?team_id={$team_id}&tournament_id={$tournament_id}";
     }
 }
