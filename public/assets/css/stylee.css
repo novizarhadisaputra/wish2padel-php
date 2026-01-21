@@ -505,3 +505,92 @@ nav#maiavbar.navbar-fixed {
     transform: translateY(0);
   }
 }
+
+/* Login Page Styles */
+.login-page {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: url('../image/mainpage.jpg') no-repeat center center fixed;
+  background-size: cover;
+}
+
+.login-container {
+  max-width: 700px;
+  width: 90%;
+  background: rgba(255, 255, 255, 0.85);
+  margin: 5vh auto 40px;
+  padding: 35px 40px;
+  border-radius: 12px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.25);
+  transition: box-shadow 0.3s ease;
+  position: relative;
+}
+
+.btn-submit {
+  background-color: #88694A;
+  color: #212121;
+  font-weight: 700;
+  border: none;
+  padding: 12px;
+  border-radius: 30px;
+  width: 100%;
+  font-size: 1.15rem;
+  box-shadow: 0 5px 12px #88694A;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  cursor: pointer;
+}
+
+.error-msg {
+  color: #D32F2F;
+  font-size: 0.875rem;
+  margin-top: 6px;
+  min-height: 18px;
+  font-weight: 600;
+  text-align: center;
+}
+
+/* Login Input Custom Styles */
+.login-container .form-label {
+  color: #004d40;
+  font-weight: 700;
+  margin-bottom: 5px;
+}
+
+.login-container .input-group {
+  border-bottom: 2px solid #004d40;
+}
+
+.login-container .input-group-text {
+  background-color: transparent;
+  border: none;
+  color: #004d40;
+  font-size: 1.2rem;
+  padding-left: 5px;
+}
+
+.login-container .form-control {
+  background-color: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  color: #333;
+}
+
+.login-container .form-control:focus {
+  background-color: transparent;
+  box-shadow: none;
+  color: #000;
+}
+
+.login-container .form-control::placeholder {
+  font-style: italic;
+  color: #6c757d;
+  opacity: 0.8;
+}
+
+.login-container .input-group:focus-within {
+  border-bottom-color: #88694A; /* Brand Gold/Brown */
+}
+
+.login-container .input-group:focus-within .input-group-text {
+  color: #88694A;
+}
