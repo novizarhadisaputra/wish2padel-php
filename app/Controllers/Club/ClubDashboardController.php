@@ -149,7 +149,9 @@ class ClubDashboardController
             $logo_url = $club['logo_url'];
             if (!empty($_FILES['logo']['name'])) {
                 $logo_name = time() . '_' . basename($_FILES['logo']['name']);
-                move_uploaded_file($_FILES['logo']['tmp_name'], '../uploads/club/' . $logo_name);
+                $targetDir = __DIR__ . '/../../../public/uploads/club/';
+                if (!is_dir($targetDir)) mkdir($targetDir, 0755, true);
+                move_uploaded_file($_FILES['logo']['tmp_name'], $targetDir . $logo_name);
                 $logo_url = $logo_name;
             }
 
@@ -204,10 +206,12 @@ class ClubDashboardController
 
             // Photos
             if (!empty($_FILES['photos']['name'][0])) {
+                $targetDir = __DIR__ . '/../../../public/uploads/club/';
+                if (!is_dir($targetDir)) mkdir($targetDir, 0755, true);
                 foreach ($_FILES['photos']['name'] as $i => $photo_name) {
                     if ($_FILES['photos']['error'][$i] === 0) {
                         $new_name = time() . '_' . $photo_name;
-                        move_uploaded_file($_FILES['photos']['tmp_name'][$i], '../uploads/club/' . $new_name);
+                        move_uploaded_file($_FILES['photos']['tmp_name'][$i], $targetDir . $new_name);
                         $caption = $_POST['photo_caption'][$i] ?? '';
                         $type = $_POST['photo_type'][$i] ?? '';
                         $stmt = $conn->prepare("INSERT INTO photos (center_id, url, caption, type) VALUES (?, ?, ?, ?)");

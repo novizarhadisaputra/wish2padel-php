@@ -49,7 +49,8 @@ class AdminController
     {
         $this->ensureAdmin();
         $conn = getDBConnection();
-        $uploadDir = "../uploads/news/";
+        $uploadDir = __DIR__ . '/../../../public/uploads/news/';
+        if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
 
         if (isset($_POST['add'])) {
             $title = $_POST['title'];
@@ -101,7 +102,8 @@ class AdminController
     {
         $this->ensureAdmin();
         $conn = getDBConnection();
-        $uploadDir = "../uploads/sponsor/";
+        $uploadDir = __DIR__ . '/../../../public/uploads/sponsor/';
+        if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
 
         if (isset($_POST['add_sponsor'])) {
             $name = $_POST['sponsor_name'];
@@ -775,7 +777,7 @@ class AdminController
     {
         $this->ensureAdmin();
         $conn = getDBConnection();
-        $uploadDir = "../uploads/template/";
+        $uploadDir = __DIR__ . '/../../../public/uploads/template/';
         $dbDir = "uploads/template/";
 
         if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
@@ -827,7 +829,8 @@ class AdminController
     {
         $this->ensureAdmin();
         $conn = getDBConnection();
-        $uploadDir = "../uploads/gallery/";
+        $uploadDir = __DIR__ . '/../../../public/uploads/gallery/';
+        if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
 
         if (isset($_POST['add_media'])) {
             $name = trim($_POST['media_name']);
@@ -1010,7 +1013,7 @@ class AdminController
     {
         $this->ensureAdmin();
         $conn = getDBConnection();
-        $uploadDir = "../uploads/presentasion/";
+        $uploadDir = __DIR__ . '/../../../public/uploads/presentasion/';
         $dbDir = "uploads/presentasion/";
         if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
 
@@ -1180,7 +1183,7 @@ class AdminController
         $conn = getDBConnection();
         $success = null;
         $error = null;
-        $uploadDir = "../uploads/logo/";
+        $uploadDir = __DIR__ . '/../../../public/uploads/logo/';
         $dbDir = "uploads/logo/";
 
         if (!is_dir($uploadDir)) {
