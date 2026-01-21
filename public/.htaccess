@@ -9,6 +9,10 @@
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
 
+    # Redirect /public to proper routes (Remove public from URL)
+    RewriteCond %{REQUEST_URI} ^/?(.*)/public(/.*)?$ [NC]
+    RewriteRule ^ /%1%2 [R=301,L]
+
     # Redirect Trailing Slashes...
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_URI} (.+)/$
