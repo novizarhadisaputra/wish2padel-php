@@ -205,6 +205,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const div = document.createElement('div');
         div.classList.add('row','g-2','mb-2','pista-item');
         div.innerHTML = `
+            <input type="hidden" name="pista_id[]" value="">
             <div class="col-md-6"><input type="text" name="pista_name[]" class="form-control" placeholder="Field Name"></div>
             <div class="col-md-4"><input type="number" name="pista_quantity[]" class="form-control" placeholder="Quantity"></div>
             <div class="col-md-2"><button type="button" class="btn btn-danger remove-pista">Remove</button></div>
@@ -220,6 +221,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const daysOptions = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"]
             .map(d => `<option value="${d}">${d}</option>`).join('');
         div.innerHTML = `
+            <input type="hidden" name="schedule_id[]" value="">
             <div class="col-md-3">
                 <select name="schedule_day[]" class="form-select">${daysOptions}</select>
             </div>

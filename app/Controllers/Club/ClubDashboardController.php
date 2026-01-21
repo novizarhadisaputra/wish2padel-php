@@ -18,9 +18,24 @@ class ClubDashboardController
 
         if (!$center) die("Center not found.");
 
-        $pistas = $conn->query("SELECT * FROM pistas WHERE center_id = $center_id")->fetch_all(MYSQLI_ASSOC);
-        $schedules = $conn->query("SELECT * FROM schedules WHERE center_id = $center_id")->fetch_all(MYSQLI_ASSOC);
-        $photos = $conn->query("SELECT * FROM photos WHERE center_id = $center_id")->fetch_all(MYSQLI_ASSOC);
+        // Prepared statements for other queries
+        $stmt = $conn->prepare("SELECT * FROM pistas WHERE center_id = ?");
+        $stmt->bind_param("i", $center_id);
+        $stmt->execute();
+        $pistas = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+        $stmt->close();
+
+        $stmt = $conn->prepare("SELECT * FROM schedules WHERE center_id = ?");
+        $stmt->bind_param("i", $center_id);
+        $stmt->execute();
+        $schedules = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+        $stmt->close();
+
+        $stmt = $conn->prepare("SELECT * FROM photos WHERE center_id = ?");
+        $stmt->bind_param("i", $center_id);
+        $stmt->execute();
+        $photos = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+        $stmt->close();
 
         view('club.dashboard', compact('center', 'pistas', 'schedules', 'photos'));
     }
@@ -115,7 +130,11 @@ class ClubDashboardController
 
         // Handle Update
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $club = $conn->query("SELECT * FROM centers WHERE id=$center_id")->fetch_assoc();
+            $stmt = $conn->prepare("SELECT * FROM centers WHERE id=?");
+            $stmt->bind_param("i", $center_id);
+            $stmt->execute();
+            $club = $stmt->get_result()->fetch_assoc();
+            $stmt->close();
 
             $name = $_POST['name'] ?? '';
             $street = $_POST['street'] ?? '';
@@ -143,39 +162,11 @@ class ClubDashboardController
             if (!empty($_POST['pista_name'])) {
                 foreach ($_POST['pista_name'] as $i => $pname) {
                     $qty = $_POST['pista_quantity'][$i] ?? 0;
-                    $pista_id = $_POST['pista_id'][$i] ?? null; // Legacy view didn't have hidden ID field, it checked by existing? No, legacy logic was insert/update based on ID if present. But legacy form DIDN'T have ID input in the loop for existing items?
-                    // Wait, let's check legacy `update_center.php` form.
-                    // Loop: `<input type="text" name="pista_name[]" ...>`
-                    // It does NOT have a hidden input for ID!
-                    // Legacy code:
-                    // `$pista_id = $_POST['pista_id'][$i] ?? null;`
-                    // BUT WHERE IS IT IN FORM?
-                    // Legacy form: `<div class="col-md-2"><button ... data-id="<?= $p['id'] ?>" ...>Remove</button></div>`
-                    // It seems legacy `update_center.php` DOES NOT submit IDs for existing items in the main form loop?
-                    // Let's re-read legacy `update_center.php`.
-                    // The form loop for pistas just has `name="pista_name[]"` and `pista_quantity[]`.
-                    // It does NOT output `<input type="hidden" name="pista_id[]" value="...">`.
-                    // So `$pista_id` would be null or mismatched index?
-                    // Actually, legacy PHP `update_center.php`:
-                    // `foreach ($_POST['pista_name'] as $i => $pname)`
-                    // `$pista_id = $_POST['pista_id'][$i] ?? null;`
-                    // If the form doesn't send `pista_id[]`, this is always null.
-                    // This means legacy code might have been deleting/recreating or just failing to update specific IDs properly (always inserting?).
-                    // OR I missed the hidden input in `read_file`.
-                    // Let's look closely at `read_file` output for `update_center.php`.
-                    // `<div class="row g-2 mb-2 pista-item">`
-                    // `<div class="col-md-6"><input type="text" name="pista_name[]" ...></div>`
-                    // No hidden ID.
-                    // So legacy code `INSERT`s new ones every time?
-                    // `$stmt = $conn->prepare("INSERT INTO pistas ...")` is in the `else` block of `if ($pista_id)`.
-                    // If `$pista_id` is null, it inserts.
-                    // So every save duplicates Pistas? That's a bug in legacy code.
-                    // I should fix it. I will add the hidden ID input in my new View.
+                    $pista_id = isset($_POST['pista_id'][$i]) ? intval($_POST['pista_id'][$i]) : 0;
 
                     if ($pname) {
-                        if ($pista_id) {
+                        if ($pista_id > 0) {
                             $stmt = $conn->prepare("UPDATE pistas SET name=?, quantity=? WHERE id=? AND center_id=?");
-                            $stmt->bind_param("siis", $pname, $qty, $pista_id, $center_id); // wait id is int
                             $stmt->bind_param("siii", $pname, $qty, $pista_id, $center_id);
                         } else {
                             $stmt = $conn->prepare("INSERT INTO pistas (center_id, name, quantity) VALUES (?, ?, ?)");
@@ -192,21 +183,13 @@ class ClubDashboardController
                 foreach ($_POST['schedule_day'] as $i => $day) {
                     $open = $_POST['open_time'][$i] ?? null;
                     $close = $_POST['close_time'][$i] ?? null;
-                    $schedule_id = $_POST['schedule_id'][$i] ?? null; // I must add this hidden input too
-                    // Format dates
-                    $open = $open ? date('Y-m-d H:i:s', strtotime($open)) : null; // Legacy used date() on time input? `date('Y-m-d', ...)`?
-                    // Legacy: `$open = $open ? date('Y-m-d', strtotime($open)) : null;`
-                    // Wait, `open_time` column is `DATE` or `TIME` or `DATETIME`?
-                    // Input type is `time`. `strtotime` gives today's date with that time.
-                    // If column is `TIME`, `date('H:i:s')` is better.
-                    // Legacy code used `Y-m-d`. This suggests the column might be DATETIME or user didn't care about date part.
-                    // I will replicate legacy behavior: `date('Y-m-d', strtotime($open))`.
-                    // Actually, let's assume `open_time` is time.
-                    // If legacy used Y-m-d, it might be wrong if it's just time.
-                    // But I'll stick to legacy: `date('Y-m-d', ...)`
+                    $schedule_id = isset($_POST['schedule_id'][$i]) ? intval($_POST['schedule_id'][$i]) : 0;
+
+                    // Format dates (keeping legacy behavior)
+                    $open = $open ? date('Y-m-d H:i:s', strtotime($open)) : null;
 
                     if ($day) {
-                        if ($schedule_id) {
+                        if ($schedule_id > 0) {
                             $stmt = $conn->prepare("UPDATE schedules SET day=?, open_time=?, close_time=?, updated_at=NOW() WHERE id=? AND center_id=?");
                             $stmt->bind_param("sssii", $day, $open, $close, $schedule_id, $center_id);
                         } else {
@@ -238,10 +221,29 @@ class ClubDashboardController
             redirect('/club/dashboard');
         }
 
-        $club = $conn->query("SELECT * FROM centers WHERE id=$center_id")->fetch_assoc();
-        $pistas = $conn->query("SELECT * FROM pistas WHERE center_id=$center_id")->fetch_all(MYSQLI_ASSOC);
-        $schedules = $conn->query("SELECT * FROM schedules WHERE center_id=$center_id")->fetch_all(MYSQLI_ASSOC);
-        $photos = $conn->query("SELECT * FROM photos WHERE center_id=$center_id")->fetch_all(MYSQLI_ASSOC);
+        $stmt = $conn->prepare("SELECT * FROM centers WHERE id=?");
+        $stmt->bind_param("i", $center_id);
+        $stmt->execute();
+        $club = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
+
+        $stmt = $conn->prepare("SELECT * FROM pistas WHERE center_id=?");
+        $stmt->bind_param("i", $center_id);
+        $stmt->execute();
+        $pistas = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+        $stmt->close();
+
+        $stmt = $conn->prepare("SELECT * FROM schedules WHERE center_id=?");
+        $stmt->bind_param("i", $center_id);
+        $stmt->execute();
+        $schedules = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+        $stmt->close();
+
+        $stmt = $conn->prepare("SELECT * FROM photos WHERE center_id=?");
+        $stmt->bind_param("i", $center_id);
+        $stmt->execute();
+        $photos = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+        $stmt->close();
 
         view('club.update', compact('club', 'pistas', 'schedules', 'photos'));
     }

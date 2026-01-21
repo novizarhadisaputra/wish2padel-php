@@ -1,16 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<head>
-  <link rel="icon" type="image/png" sizes="32x32" href="<?= asset('assets/image/w2p.png') ?>">
-  <link rel="icon" type="image/png" sizes="16x16" href="<?= asset('assets/image/w2p.png') ?>">
-  <link rel="apple-touch-icon" href="<?= asset('assets/image/w2p.png') ?>">
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Leaderboard - Padel League</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <link rel="stylesheet" href="<?= asset('assets/css/style.css') ?>">
-</head>
+<?php view('partials.head', ['title' => 'Leaderboard - Padel League', 'css' => 'assets/css/style.css']); ?>
 
 <body>
 
@@ -180,87 +171,8 @@
 
   <?php view('partials.footer'); ?>
 
-  <!-- Scroll to Top Button -->
-  <button id="scrollTopBtn" title="Go to top">↑</button>
-
-  <script>
-    const scrollBtn = document.getElementById("scrollTopBtn");
-
-    // Show/hide button on scroll
-    window.onscroll = function() {
-      if (document.body.scrollTop > 200 || document.documentElement.scrollTop > 200) {
-        scrollBtn.style.display = "block";
-      } else {
-        scrollBtn.style.display = "none";
-      }
-    };
-
-    // Scroll to top smoothly
-    scrollBtn.addEventListener("click", function() {
-      window.scrollTo({
-        top: 0,
-        behavior: "smooth"
-      });
-    });
-  </script>
-
-
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      const navbar = document.getElementById('maiavbar');
-      const hero = document.getElementById('about-liga'); // Pastikan ada elemen heroCarousel di halaman
-
-      function toggleNavbarFixed() {
-        if (!hero) return; // kalau heroCarousel gak ada, skip
-
-        const scrollPos = window.scrollY;
-        const heroHeight = hero.offsetHeight;
-
-        if (scrollPos >= heroHeight) {
-          navbar.classList.add('navbar-fixed');
-          document.body.style.paddingTop = navbar.offsetHeight + 'px'; // supaya konten gak tertutup
-        } else {
-          navbar.classList.remove('navbar-fixed');
-          document.body.style.paddingTop = '0';
-        }
-      }
-
-      window.addEventListener('scroll', toggleNavbarFixed);
-      toggleNavbarFixed(); // jalankan sekali saat load
-    });
-  </script>
-
-  <style>
-    /* Navbar default (sudah ada background dan shadow dari kamu) */
-    nav#maiavbar {
-
-      width: 100%;
-      transition: all 0.3s ease;
-      z-index: 9999;
-    }
-
-    /* Navbar jadi fixed dan muncul dengan animasi */
-    nav#maiavbar.navbar-fixed {
-      position: fixed;
-      top: 0;
-      left: 0;
-      background: linear-gradient(90deg, #00796B, #004D40);
-      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.25);
-      animation: fadeInDown 0.4s ease forwards;
-    }
-
-    @keyframes fadeInDown {
-      from {
-        opacity: 0;
-        transform: translateY(-20px);
-      }
-
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-  </style>
+  <?php view('partials.scroll_top'); ?>
+  <?php view('partials.navbar_sticky_script', ['sticky_target' => 'leaderboard']); ?>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
