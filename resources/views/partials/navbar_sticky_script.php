@@ -37,7 +37,7 @@
     position: fixed;
     top: 0;
     left: 0;
-    background: linear-gradient(90deg, #00796B, #004D40);
+    background: linear-gradient(90deg, #000000, #4f4f4f);
     box-shadow: 0 3px 8px rgba(0,0,0,0.25);
     animation: fadeInDown 0.4s ease forwards;
   }
