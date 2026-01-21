@@ -197,7 +197,7 @@ class TeamController
                  $player_name = $_POST['player_name'] ?? null;
                  $profile = null;
                  if (!empty($_FILES['profile']['name'])) {
-                     $targetDir = "../uploads/profile/";
+                     $targetDir = __DIR__ . "/../../public/uploads/profile/";
                      if (!is_dir($targetDir)) mkdir($targetDir, 0777, true);
                      $ext = pathinfo($_FILES['profile']['name'], PATHINFO_EXTENSION);
                      $fileName = "profile_" . time() . "_" . $member_id . "." . $ext;
@@ -237,7 +237,7 @@ class TeamController
                  $stmt->execute();
                  $stmt->close();
                  if (isset($_FILES['team_logo']) && !empty($_FILES['team_logo']['tmp_name'])) {
-                     $upload_dir = '../uploads/logo/';
+                     $upload_dir = __DIR__ . '/../../public/uploads/logo/';
                      if (!is_dir($upload_dir)) mkdir($upload_dir, 0755, true);
                      $filename = basename($_FILES['team_logo']['name']);
                      if (move_uploaded_file($_FILES['team_logo']['tmp_name'], $upload_dir . $filename)) {
@@ -269,7 +269,7 @@ class TeamController
                  $profile = null;
                  if ($name !== '') {
                      if (!empty($_FILES['profile']['name'])) {
-                         $targetDir = "../uploads/profile/";
+                         $targetDir = __DIR__ . "/../../public/uploads/profile/";
                          if (!is_dir($targetDir)) mkdir($targetDir, 0777, true);
                          $ext = pathinfo($_FILES['profile']['name'], PATHINFO_EXTENSION);
                          $fileName = "profile_" . time() . "_" . $team_id . "." . $ext;
@@ -355,7 +355,7 @@ class TeamController
             try {
                 $used_players = [];
                 if (isset($_FILES['lineup_file']) && $_FILES['lineup_file']['error'] === UPLOAD_ERR_OK) {
-                    $upload_dir = "../uploads/letter/lineup/";
+                    $upload_dir = __DIR__ . "/../../public/uploads/letter/lineup/";
                     if (!is_dir($upload_dir)) mkdir($upload_dir, 0777, true);
                     $ext = strtolower(pathinfo($_FILES['lineup_file']['name'], PATHINFO_EXTENSION));
                     $new_filename = "lineup_match" . intval($match_id) . "_team" . intval($team_id) . "_" . time() . "." . $ext;
@@ -420,7 +420,7 @@ class TeamController
             try {
                 $conn->autocommit(false);
                 if (!isset($_FILES['score_file']) || $_FILES['score_file']['error'] !== UPLOAD_ERR_OK) throw new Exception("Score letter required");
-                $upload_dir = "../uploads/letter/elimination/";
+                $upload_dir = __DIR__ . "/../../public/uploads/letter/elimination/";
                 if (!is_dir($upload_dir)) mkdir($upload_dir, 0777, true);
                 $ext = strtolower(pathinfo($_FILES['score_file']['name'], PATHINFO_EXTENSION));
                 $new_filename = "score_match{$match_id}_team{$team_id}_" . time() . "." . $ext;
