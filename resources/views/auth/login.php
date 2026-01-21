@@ -26,12 +26,18 @@
     <form id="loginForm" method="POST" action="<?= asset('login') ?>" novalidate>
       <div class="mb-3">
         <label for="login_identifier" class="form-label">Username</label>
-        <input type="text" class="form-control" id="login_identifier" name="login_identifier" placeholder="Enter username" required />
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-person-fill"></i></span>
+            <input type="text" class="form-control" id="login_identifier" name="login_identifier" placeholder="Enter username" required />
+        </div>
       </div>
 
       <div class="mb-3">
         <label for="login_password" class="form-label">Password</label>
-        <input type="password" class="form-control" id="login_password" name="login_password" placeholder="Enter your password" required />
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
+            <input type="password" class="form-control" id="login_password" name="login_password" placeholder="Enter your password" required />
+        </div>
       </div>
 
       <button type="submit" class="btn btn-submit">Login</button>
