@@ -14,6 +14,30 @@ if (!function_exists('view')) {
     }
 }
 
+if (!function_exists('getSiteLogo')) {
+    function getSiteLogo()
+    {
+        $conn = getDBConnection();
+        // Attempt to fetch from DB. If fails, return default.
+        // Using @ to suppress errors if table doesn't exist yet
+        $sql = "SELECT setting_value FROM payment_settings WHERE setting_name = 'SITE_LOGO' LIMIT 1";
+        try {
+            $res = $conn->query($sql);
+            if ($res && $res->num_rows > 0) {
+                $row = $res->fetch_assoc();
+                if (!empty($row['setting_value'])) {
+                    // Ensure the path is correct relative to asset base
+                    return asset($row['setting_value']);
+                }
+            }
+        } catch (\Throwable $e) {
+            // Fallback
+        }
+
+        return asset('assets/image/w2p.png');
+    }
+}
+
 if (!function_exists('asset')) {
     function asset($path)
     {

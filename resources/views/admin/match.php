@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link rel="icon" type="image/png" sizes="32x32" href="<?= asset('assets/image/w2p.png') ?>">
-    <link rel="icon" type="image/png" sizes="16x16" href="<?= asset('assets/image/w2p.png') ?>">
-    <link rel="apple-touch-icon" href="<?= asset('assets/image/w2p.png') ?>">
+    <link rel="icon" type="image/png" sizes="32x32" href="<?= getSiteLogo() ?>">
+    <link rel="icon" type="image/png" sizes="16x16" href="<?= getSiteLogo() ?>">
+    <link rel="apple-touch-icon" href="<?= getSiteLogo() ?>">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Match - Wish2Padel</title>
@@ -114,6 +114,9 @@
                 <button class="btn btn-sm btn-outline-dark rounded-circle" data-bs-toggle="modal" data-bs-target="#editModal<?= $row['id'] ?>" title="Edit">
                   <i class="bi bi-pencil"></i>
                 </button>
+                <button class="btn btn-sm btn-outline-danger rounded-circle ms-1" data-bs-toggle="modal" data-bs-target="#noShowModal<?= $row['id'] ?>" title="Report No Show">
+                  <i class="bi bi-exclamation-triangle"></i>
+                </button>
               <?php endif; ?>
             </td>
           </tr>
@@ -128,6 +131,30 @@
   </div>
 </div>
 <?php foreach($modalData as $row): ?>
+<div class="modal fade" id="noShowModal<?= $row['id'] ?>" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title">Report No Show</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p>Select the team that did <b>not</b> show up. The opponent will be declared the winner.</p>
+        <form method="POST" action="<?= asset('admin/matches') ?>?year=<?= $selected_year ?>">
+            <input type="hidden" name="match_id" value="<?= $row['id'] ?>">
+            <input type="hidden" name="tournament_id" value="<?= $row['tournament_id'] ?? 0 ?>">
+            <button type="submit" name="report_no_show" value="<?= $row['team1_id'] ?>" class="btn btn-outline-danger w-100 mb-2">
+                <?= htmlspecialchars($row['team1_name']) ?> (No Show)
+            </button>
+            <button type="submit" name="report_no_show" value="<?= $row['team2_id'] ?>" class="btn btn-outline-danger w-100">
+                <?= htmlspecialchars($row['team2_name']) ?> (No Show)
+            </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="modal fade" id="editModal<?= $row['id'] ?>" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered" style="margin-top:100px">
     <div class="modal-content shadow border-0 rounded-3">

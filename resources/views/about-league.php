@@ -8,7 +8,7 @@
         <section class="py-5" style="background-color: #303030;">
           <div class="container">
             <div class="text-center mb-4" data-aos="fade-down">
-              <img src="<?= asset('assets/image/w2p.png') ?>" alt="Wish2Padel Logo" 
+              <img src="<?= getSiteLogo() ?>" alt="Wish2Padel Logo"
                    style="max-height: 190px; width: auto;">
             </div>
         

@@ -1,7 +1,7 @@
 <nav id="maiavbar" class="navbar navbar-expand-lg">
   <div class="container-fluid">
     <a class="navbar-brand" href="<?= asset('/') ?>">
-      <img src="<?= asset('assets/image/w2p.png') ?>" alt="Logo" class="d-inline-block align-text-top">
+      <img src="<?= getSiteLogo() ?>" alt="Logo" class="d-inline-block align-text-top">
     </a>
     <button
       class="navbar-toggler"

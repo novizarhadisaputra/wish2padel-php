@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link rel="icon" type="image/png" sizes="32x32" href="<?= asset('assets/image/w2p.png') ?>">
-    <link rel="icon" type="image/png" sizes="16x16" href="<?= asset('assets/image/w2p.png') ?>">
-    <link rel="apple-touch-icon" href="<?= asset('assets/image/w2p.png') ?>">
+    <link rel="icon" type="image/png" sizes="32x32" href="<?= getSiteLogo() ?>">
+    <link rel="icon" type="image/png" sizes="16x16" href="<?= getSiteLogo() ?>">
+    <link rel="apple-touch-icon" href="<?= getSiteLogo() ?>">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Media - Wish2Padel</title>
@@ -301,6 +301,9 @@ endwhile;
                 </div>
                 <div class="card-body text-white">
                     <span class="badge bg-gold text-white"><?= htmlspecialchars($p['category_name']) ?></span>
+                    <?php if(!empty($p['video_url'])): ?>
+                    <span class="badge bg-danger ms-1">Video</span>
+                    <?php endif; ?>
                     <small class="d-block mt-2"><?= htmlspecialchars($p['media_name']) ?></small>
                     <small class="d-block mt-1"><?= date("d M Y H:i", strtotime($p['created_at'])) ?></small>
 
@@ -336,8 +339,12 @@ endwhile;
                     </select>
                   </div>
                   <div class="mb-3">
-                    <label>Photo Image</label>
+                    <label>Photo Image (or Thumbnail)</label>
                     <input type="file" name="image" class="form-control">
+                  </div>
+                  <div class="mb-3">
+                    <label>Video URL</label>
+                    <input type="url" name="video_url" class="form-control" value="<?= htmlspecialchars($p['video_url'] ?? '') ?>" placeholder="https://youtube.com/...">
                   </div>
                 </div>
                 <div class="modal-footer">
@@ -395,8 +402,12 @@ endwhile;
               </select>
             </div>
             <div class="mb-3">
-              <label>Photo Image</label>
+              <label>Photo Image (or Thumbnail)</label>
               <input type="file" name="image" class="form-control" required>
+            </div>
+            <div class="mb-3">
+              <label>Video URL (Optional)</label>
+              <input type="url" name="video_url" class="form-control" placeholder="https://youtube.com/...">
             </div>
           </div>
           <div class="modal-footer">

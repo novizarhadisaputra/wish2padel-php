@@ -382,6 +382,53 @@ class AdminController
             redirect('/admin/matches?year='.$selected_year);
         }
 
+        if (isset($_POST['report_no_show'])) {
+            $match_id = (int)$_POST['match_id'];
+            $team_no_show_id = (int)$_POST['report_no_show'];
+            $tournament_id = (int)$_POST['tournament_id'];
+
+            // Identify opponent
+            $stmt = $conn->prepare("SELECT team1_id, team2_id FROM matches WHERE id = ?");
+            $stmt->bind_param("i", $match_id);
+            $stmt->execute();
+            $res = $stmt->get_result();
+            if ($m = $res->fetch_assoc()) {
+                $team1 = $m['team1_id'];
+                $team2 = $m['team2_id'];
+                $opponent_id = ($team_no_show_id == $team1) ? $team2 : $team1;
+
+                // Check penalties
+                $stmtCheck = $conn->prepare("SELECT COUNT(*) as cnt FROM team_penalties WHERE team_id = ? AND tournament_id = ?");
+                $stmtCheck->bind_param("ii", $team_no_show_id, $tournament_id);
+                $stmtCheck->execute();
+                $cnt = $stmtCheck->get_result()->fetch_assoc()['cnt'];
+
+                $type = ($cnt == 0) ? 'warning' : 'deduction';
+                $points = ($cnt == 0) ? 0 : 1;
+
+                $stmtIns = $conn->prepare("INSERT INTO team_penalties (team_id, tournament_id, match_id, type, points) VALUES (?, ?, ?, ?, ?)");
+                $stmtIns->bind_param("iiisi", $team_no_show_id, $tournament_id, $match_id, $type, $points);
+                $stmtIns->execute();
+
+                // Update Match Status
+                $stmtUpd = $conn->prepare("UPDATE matches SET status = 'completed', notes = 'No Show' WHERE id = ?");
+                $stmtUpd->bind_param("i", $match_id);
+                $stmtUpd->execute();
+
+                // Record Result (Opponent Wins)
+                // Remove existing results for this match to avoid duplicates
+                $conn->query("DELETE FROM match_results WHERE match_id = $match_id");
+
+                // Add winner result. NOTE: winner_team_id column assumed based on LeagueController usage.
+                // We use ignore in case of schema mismatch, but really we rely on it working.
+                $stmtRes = $conn->prepare("INSERT INTO match_results (match_id, team_id, pairs_won, pairs_lost, status, winner_team_id) VALUES (?, ?, 3, 0, 'accept', ?)");
+                $stmtRes->bind_param("iii", $match_id, $opponent_id, $opponent_id);
+                $stmtRes->execute();
+
+                redirect('/admin/matches?year='.$selected_year);
+            }
+        }
+
         view('admin.match', compact('years', 'selected_year', 'matches_exist', 'matches_list'));
     }
 
@@ -532,8 +579,9 @@ class AdminController
         if (isset($_POST['add_division'])) {
             $id = (int) $_POST['id'];
             $division_name = trim($_POST['division_name']);
-            $stmt = $conn->prepare("INSERT INTO divisions (id, division_name) VALUES (?, ?)");
-            $stmt->bind_param("is", $id, $division_name);
+            $gender = $_POST['gender'] ?? 'Men';
+            $stmt = $conn->prepare("INSERT INTO divisions (id, division_name, gender) VALUES (?, ?, ?)");
+            $stmt->bind_param("iss", $id, $division_name, $gender);
             $stmt->execute();
         }
 
@@ -541,9 +589,18 @@ class AdminController
             $old_id = (int) $_POST['id'];
             $new_id = (int) $_POST['id_new'];
             $division_name = trim($_POST['division_name']);
-            $stmt = $conn->prepare("INSERT INTO divisions (id, division_name) VALUES (?, ?) ON DUPLICATE KEY UPDATE division_name = VALUES(division_name)");
-            $stmt->bind_param("is", $new_id, $division_name);
+            $gender = $_POST['gender'] ?? 'Men';
+
+            // Note: INSERT ... ON DUPLICATE KEY UPDATE might overwrite other fields if using 'id'.
+            // Better to use explicit UPDATE for edit if ID hasn't changed, but here ID is primary key.
+            // If ID changes, we need to handle that. But 'id' is used in logic.
+            // Assuming this logic attempts to allow changing ID.
+
+            // Updated logic to support gender
+            $stmt = $conn->prepare("INSERT INTO divisions (id, division_name, gender) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE division_name = VALUES(division_name), gender = VALUES(gender)");
+            $stmt->bind_param("iss", $new_id, $division_name, $gender);
             $stmt->execute();
+
             $result = $conn->query("SELECT tcd.team_id FROM team_contact_details tcd JOIN team_info ti ON tcd.team_id = ti.id JOIN tournaments tor ON ti.tournament_id = tor.id WHERE tcd.division = $old_id AND tor.status = 'upcoming'");
             while ($row = $result->fetch_assoc()) {
                 $team_id = (int)$row['team_id'];
@@ -852,12 +909,15 @@ class AdminController
 
         if(isset($_POST['add_photo'])){
             $category_id = intval($_POST['category_id']);
+            $video_url = !empty($_POST['video_url']) ? trim($_POST['video_url']) : null;
+
             if($category_id && !empty($_FILES['image']['name'])){
                 $fileName = time().'_'.basename($_FILES['image']['name']);
                 move_uploaded_file($_FILES['image']['tmp_name'],$uploadDir.$fileName);
                 $created_at = date('Y-m-d H:i:s');
-                $stmt = $conn->prepare("INSERT INTO photo (category_id,file_name,created_at) VALUES (?,?,?)");
-                $stmt->bind_param("iss",$category_id,$fileName,$created_at);
+                // Insert with video_url
+                $stmt = $conn->prepare("INSERT INTO photo (category_id, file_name, video_url, created_at) VALUES (?,?,?,?)");
+                $stmt->bind_param("isss", $category_id, $fileName, $video_url, $created_at);
                 $stmt->execute();
             }
             redirect('/admin/gallery');
@@ -866,14 +926,16 @@ class AdminController
         if (isset($_POST['update_photo'])) {
             $id = intval($_POST['id']);
             $category_id = intval($_POST['category_id']);
+            $video_url = !empty($_POST['video_url']) ? trim($_POST['video_url']) : null;
+
             if (!empty($_FILES['image']['name'])) {
                 $fileName = time().'_'.basename($_FILES['image']['name']);
                 move_uploaded_file($_FILES['image']['tmp_name'], $uploadDir.$fileName);
-                $stmt = $conn->prepare("UPDATE photo SET category_id=?, file_name=? WHERE id=?");
-                $stmt->bind_param("isi", $category_id, $fileName, $id);
+                $stmt = $conn->prepare("UPDATE photo SET category_id=?, file_name=?, video_url=? WHERE id=?");
+                $stmt->bind_param("issi", $category_id, $fileName, $video_url, $id);
             } else {
-                $stmt = $conn->prepare("UPDATE photo SET category_id=? WHERE id=?");
-                $stmt->bind_param("ii", $category_id, $id);
+                $stmt = $conn->prepare("UPDATE photo SET category_id=?, video_url=? WHERE id=?");
+                $stmt->bind_param("isi", $category_id, $video_url, $id);
             }
             $stmt->execute();
             redirect('/admin/gallery');
@@ -1059,6 +1121,128 @@ class AdminController
 
         $result = $conn->query("SELECT * FROM transfer_windows ORDER BY start_date DESC");
         view('admin.windows', compact('result'));
+    }
+
+    public function users()
+    {
+        $this->ensureAdmin();
+        $conn = getDBConnection();
+
+        // Teams
+        $teams = $conn->query("SELECT ta.team_id, ta.username, ti.team_name FROM team_account ta JOIN team_info ti ON ta.team_id = ti.id ORDER BY ti.team_name ASC");
+
+        // Users
+        $users = $conn->query("SELECT id, username, email, role FROM users ORDER BY username ASC");
+
+        view('admin.users', compact('teams', 'users'));
+    }
+
+    public function impersonate()
+    {
+        $this->ensureAdmin();
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $id = (int)$_POST['id'];
+            $type = $_POST['type'];
+
+            if ($type === 'team') {
+                $conn = getDBConnection();
+                $stmt = $conn->prepare("SELECT username FROM team_account WHERE team_id = ?");
+                $stmt->bind_param("i", $id);
+                $stmt->execute();
+                $res = $stmt->get_result();
+                if ($row = $res->fetch_assoc()) {
+                    session_unset();
+                    $_SESSION['team_id'] = $id;
+                    $_SESSION['username'] = $row['username'];
+                    redirect('/dashboard');
+                }
+            } elseif ($type === 'user') {
+                $conn = getDBConnection();
+                $stmt = $conn->prepare("SELECT username, role FROM users WHERE id = ?");
+                $stmt->bind_param("i", $id);
+                $stmt->execute();
+                $res = $stmt->get_result();
+                if ($row = $res->fetch_assoc()) {
+                    session_unset();
+                    $_SESSION['user_id'] = $id;
+                    $_SESSION['username'] = $row['username'];
+                    $_SESSION['role'] = $row['role'];
+                    redirect($row['role'] === 'admin' ? '/admin/dashboard' : '/');
+                }
+            }
+        }
+        redirect('/admin/users');
+    }
+
+    public function settings()
+    {
+        $this->ensureAdmin();
+        $conn = getDBConnection();
+        $success = null;
+        $error = null;
+        $uploadDir = "../uploads/logo/";
+        $dbDir = "uploads/logo/";
+
+        if (!is_dir($uploadDir)) {
+            @mkdir($uploadDir, 0777, true);
+        }
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $action = $_POST['action'] ?? '';
+
+            if ($action === 'update_general') {
+                if (!empty($_FILES['site_logo']['name'])) {
+                    $ext = strtolower(pathinfo($_FILES['site_logo']['name'], PATHINFO_EXTENSION));
+                    if (in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp'])) {
+                        $fileName = 'site_logo_' . time() . '.' . $ext;
+                        if (move_uploaded_file($_FILES['site_logo']['tmp_name'], $uploadDir . $fileName)) {
+                            $filePath = $dbDir . $fileName;
+                            $stmt = $conn->prepare("INSERT INTO payment_settings (setting_name, setting_value) VALUES ('SITE_LOGO', ?) ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)");
+                            $stmt->bind_param("s", $filePath);
+                            $stmt->execute();
+                            $success = "Logo updated successfully.";
+                        } else {
+                            $error = "Failed to move uploaded file.";
+                        }
+                    } else {
+                        $error = "Invalid file type. Please upload an image.";
+                    }
+                }
+            } elseif ($action === 'change_password') {
+                $current = $_POST['current_password'];
+                $new = $_POST['new_password'];
+                $confirm = $_POST['confirm_password'];
+                $userId = $_SESSION['user_id'];
+
+                if ($new !== $confirm) {
+                    $error = "New passwords do not match.";
+                } else {
+                    $stmt = $conn->prepare("SELECT password_hash FROM users WHERE id = ?");
+                    $stmt->bind_param("i", $userId);
+                    $stmt->execute();
+                    $res = $stmt->get_result();
+                    if ($row = $res->fetch_assoc()) {
+                        if (password_verify($current, $row['password_hash'])) {
+                            $newHash = password_hash($new, PASSWORD_DEFAULT);
+                            $stmtUpd = $conn->prepare("UPDATE users SET password_hash = ? WHERE id = ?");
+                            $stmtUpd->bind_param("si", $newHash, $userId);
+                            if ($stmtUpd->execute()) {
+                                $success = "Password changed successfully.";
+                            } else {
+                                $error = "Database error.";
+                            }
+                        } else {
+                            $error = "Incorrect current password.";
+                        }
+                    } else {
+                         // Fallback for environment where session user might not be in DB or check fails
+                         $error = "User not found.";
+                    }
+                }
+            }
+        }
+
+        view('admin.settings', compact('success', 'error'));
     }
 
     private function ensureAdmin()

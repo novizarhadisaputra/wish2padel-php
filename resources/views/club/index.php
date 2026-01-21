@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-        <link rel="icon" type="image/png" sizes="32x32" href="<?= asset('assets/image/w2p%20logo.jpeg') ?>">
-        <link rel="icon" type="image/png" sizes="16x16" href="<?= asset('assets/image/w2p%20logo.jpeg') ?>">
-        <link rel="apple-touch-icon" href="<?= asset('assets/image/w2p%20logo.jpeg') ?>">
+        <link rel="icon" type="image/png" sizes="32x32" href="<?= getSiteLogo() ?>">
+        <link rel="icon" type="image/png" sizes="16x16" href="<?= getSiteLogo() ?>">
+        <link rel="apple-touch-icon" href="<?= getSiteLogo() ?>">
         
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -57,11 +57,13 @@
                         <div class="col-12 col-sm-6 col-md-4 fade-in">
                             <a href="<?= asset('club-detail?id=' . $club['id']) ?>" class="text-decoration-none text-dark">
                                 <div class="border rounded p-3 h-100 text-center club-item">
-                                    <img src="<?= asset('uploads/club/' . htmlspecialchars($club['logo_url'])) ?>"
-                                         alt="<?= htmlspecialchars($club['name']) ?>" 
-                                         class="img-fluid mb-3"
-                                         style="width:140px; height:140px; object-fit:contain;">
-                                    <h6 class="mb-1"><?= htmlspecialchars($club['name']) ?></h6>
+                                    <div class="d-flex justify-content-center align-items-center bg-white rounded-3 mx-auto mb-3 shadow-sm" style="width:140px; height:140px; padding:10px;">
+                                        <img src="<?= asset('uploads/club/' . htmlspecialchars($club['logo_url'])) ?>"
+                                             alt="<?= htmlspecialchars($club['name']) ?>"
+                                             class="img-fluid"
+                                             style="max-height:100%; max-width:100%; object-fit:contain;">
+                                    </div>
+                                    <h6 class="mb-1 text-truncate" title="<?= htmlspecialchars($club['name']) ?>"><?= htmlspecialchars($club['name']) ?></h6>
                                     <p class="mb-0 text-muted" style="font-size:0.85rem;">
                                         <?= htmlspecialchars($club['street']) ?> | <?= htmlspecialchars($club['postal_code']) ?> | <?= htmlspecialchars($club['city']) ?>
                                     </p>
@@ -103,11 +105,13 @@
                         col.innerHTML = `
                             <a href="<?= asset('club-detail') ?>?id=${club.id}" class="text-decoration-none text-dark">
                                 <div class="border rounded p-3 h-100 text-center club-item">
-                                    <img src="<?= asset('uploads/club/') ?>${club.logo_url}"
-                                         alt="${club.name}" 
-                                         class="img-fluid mb-3"
-                                         style="width:140px; height:140px; object-fit:contain;">
-                                    <h6 class="mb-1">${club.name}</h6>
+                                    <div class="d-flex justify-content-center align-items-center bg-white rounded-3 mx-auto mb-3 shadow-sm" style="width:140px; height:140px; padding:10px;">
+                                        <img src="<?= asset('uploads/club/') ?>${club.logo_url}"
+                                             alt="${club.name}"
+                                             class="img-fluid"
+                                             style="max-height:100%; max-width:100%; object-fit:contain;">
+                                    </div>
+                                    <h6 class="mb-1 text-truncate" title="${club.name}">${club.name}</h6>
                                     <p class="mb-0 text-muted" style="font-size:0.85rem;">
                                         ${club.street} | ${club.postal_code} | ${club.city}
                                     </p>

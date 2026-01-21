@@ -69,7 +69,7 @@
         <div class="col-12 col-sm-6 col-md-4 col-lg-3 fade-in d-flex">
           <div class="document-card flex-fill d-flex flex-column justify-content-between" style="min-height: 330px;">
             <div>
-              <img src="<?= asset('assets/image/w2p.png') ?>" alt="Document Logo">
+              <img src="<?= getSiteLogo() ?>" alt="Document Logo">
               <?php if ($doc['id'] == 1): ?>
                 <h5>Team Line Up</h5>
                 <p>This document is used by teams to fill in their player lineup before the match begins.</p>
@@ -100,7 +100,7 @@
         <div class="col-12 col-sm-6 col-md-4 col-lg-3 fade-in d-flex">
           <div class="document-card flex-fill d-flex flex-column justify-content-between" style="min-height: 350px;">
             <div>
-              <img src="<?= asset('assets/image/w2p.png') ?>" alt="Document Logo">
+              <img src="<?= getSiteLogo() ?>" alt="Document Logo">
               <?php if ($doc['id'] == 3): ?>
                 <h5>Official League Rules</h5>
                 <p>All official league rules, gameplay regulations, and match guidelines.</p>

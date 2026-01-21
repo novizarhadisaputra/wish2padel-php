@@ -96,10 +96,16 @@ Router::post('/admin/gallery', 'Admin\AdminController@gallery');
 Router::get('/admin/payment_settings', 'Admin\AdminController@paymentSettings');
 Router::post('/admin/payment_settings', 'Admin\AdminController@paymentSettings');
 
+Router::get('/admin/settings', 'Admin\AdminController@settings');
+Router::post('/admin/settings', 'Admin\AdminController@settings');
+
 Router::get('/admin/presentation', 'Admin\AdminController@presentation');
 Router::post('/admin/presentation', 'Admin\AdminController@presentation');
 
 Router::get('/admin/players', 'Admin\AdminController@players');
+
+Router::get('/admin/users', 'Admin\AdminController@users');
+Router::post('/admin/impersonate', 'Admin\AdminController@impersonate');
 
 Router::get('/admin/registrations', 'Admin\AdminController@registrations');
 

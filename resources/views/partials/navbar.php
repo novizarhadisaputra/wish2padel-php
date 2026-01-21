@@ -6,7 +6,7 @@
     ?>
     <a class="navbar-brand" href="<?= asset('/') ?>">
       <img
-        src="<?= asset('assets/image/w2p.png') ?>"
+        src="<?= getSiteLogo() ?>"
         alt="Logo"
         class="d-inline-block align-text-top"
       />
@@ -82,6 +82,12 @@
         <?php if (!empty($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
         <li class="nav-item">
           <a class="nav-link" href="<?= asset('admin/dashboard') ?>">Dashboard</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="<?= asset('admin/users') ?>">Users</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="<?= asset('admin/settings') ?>">Settings</a>
         </li>
         <?php endif ?>
 
