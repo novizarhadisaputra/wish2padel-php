@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link rel="icon" type="image/png" sizes="32x32" href="<?= asset('assets/image/w2p logo.jpeg') ?>">
-        <link rel="icon" type="image/png" sizes="16x16" href="<?= asset('assets/image/w2p logo.jpeg') ?>">
-        <link rel="apple-touch-icon" href="<?= asset('assets/image/w2p logo.jpeg') ?>">
+    <link rel="icon" type="image/png" sizes="32x32" href="<?= getSiteLogo() ?>">
+        <link rel="icon" type="image/png" sizes="16x16" href="<?= getSiteLogo() ?>">
+        <link rel="apple-touch-icon" href="<?= getSiteLogo() ?>">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Team - Wish2Padel</title>

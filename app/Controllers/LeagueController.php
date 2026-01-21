@@ -107,7 +107,9 @@ class LeagueController
                 COUNT(mr.id) AS P,
                 SUM(CASE WHEN mr.winner_team_id = t.id THEN 1 ELSE 0 END) AS W,
                 SUM(CASE WHEN mr.winner_team_id != t.id AND mr.winner_team_id IS NOT NULL THEN 1 ELSE 0 END) AS L,
-                COALESCE(SUM(CASE WHEN mr.winner_team_id = t.id THEN 2 ELSE 0 END), 0) AS points
+                (COALESCE(SUM(CASE WHEN mr.winner_team_id = t.id THEN 2 ELSE 0 END), 0)
+                 - COALESCE((SELECT SUM(points) FROM team_penalties tp WHERE tp.team_id = t.id AND tp.tournament_id = ?), 0))
+                AS points
             FROM team_info t
             LEFT JOIN matches m ON t.id = m.team1_id OR t.id = m.team2_id
             LEFT JOIN match_results mr ON m.id = mr.match_id
@@ -117,7 +119,7 @@ class LeagueController
         ";
 
         $stmt = $conn->prepare($sql);
-        $stmt->bind_param("i", $tournament_id);
+        $stmt->bind_param("ii", $tournament_id, $tournament_id);
         $stmt->execute();
         $result = $stmt->get_result();
 

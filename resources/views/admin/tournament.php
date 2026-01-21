@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link rel="icon" type="image/png" sizes="32x32" href="<?= asset('assets/image/w2p.png') ?>">
-    <link rel="icon" type="image/png" sizes="16x16" href="<?= asset('assets/image/w2p.png') ?>">
-    <link rel="apple-touch-icon" href="<?= asset('assets/image/w2p.png') ?>">
+    <link rel="icon" type="image/png" sizes="32x32" href="<?= getSiteLogo() ?>">
+    <link rel="icon" type="image/png" sizes="16x16" href="<?= getSiteLogo() ?>">
+    <link rel="apple-touch-icon" href="<?= getSiteLogo() ?>">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>League Zone - Wish2Padel</title>
@@ -315,6 +315,7 @@ while($row = $tournaments->fetch_assoc()) {
               <tr>
                 <th>Division Number</th>
                 <th>Name</th>
+                <th>Gender</th>
                 <th class="text-center">Actions</th>
               </tr>
             </thead>
@@ -327,6 +328,7 @@ while($row = $tournaments->fetch_assoc()) {
     <tr>
       <td class="fw-semibold text-dark"><?= $row['id'] ?></td>
       <td class="text-muted"><?= htmlspecialchars($row['division_name']) ?></td>
+      <td><span class="badge bg-<?= ($row['gender']??'Men')=='Women'?'danger':(($row['gender']??'')=='Mixed'?'success':'primary') ?>"><?= htmlspecialchars($row['gender']??'Men') ?></span></td>
       <td class="text-center">
         <button class="btn btn-sm btn-outline-warning me-1 rounded-circle" data-bs-toggle="modal" data-bs-target="#editDivisionModal<?= $row['id'] ?>" title="Edit">
           <i class="bi bi-pencil"></i>
@@ -366,6 +368,15 @@ while($row = $tournaments->fetch_assoc()) {
                    value="<?= htmlspecialchars($row['division_name']) ?>"
                    placeholder="Division Name" required>
             <label>Division Name</label>
+          </div>
+
+          <div class="form-floating mb-3">
+            <select name="gender" class="form-select" required>
+                <option value="Men" <?= ($row['gender']??'Men')=='Men'?'selected':'' ?>>Men</option>
+                <option value="Women" <?= ($row['gender']??'')=='Women'?'selected':'' ?>>Women</option>
+                <option value="Mixed" <?= ($row['gender']??'')=='Mixed'?'selected':'' ?>>Mixed</option>
+            </select>
+            <label>Gender</label>
           </div>
         </div>
 
@@ -519,6 +530,15 @@ while($row = $tournaments->fetch_assoc()) {
           <div class="mb-3">
             <label>Division Name</label>
             <input type="text" name="division_name" class="form-control" placeholder="Enter division name (e.g. Advanced B)" required>
+          </div>
+
+          <div class="mb-3">
+            <label>Gender</label>
+            <select name="gender" class="form-select" required>
+                <option value="Men">Men</option>
+                <option value="Women">Women</option>
+                <option value="Mixed">Mixed</option>
+            </select>
           </div>
 
         </div>

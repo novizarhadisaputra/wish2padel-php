@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link rel="icon" type="image/png" sizes="32x32" href="<?= asset('assets/image/w2p%20logo.jpeg') ?>">
-    <link rel="icon" type="image/png" sizes="16x16" href="<?= asset('assets/image/w2p%20logo.jpeg') ?>">
-    <link rel="apple-touch-icon" href="<?= asset('assets/image/w2p%20logo.jpeg') ?>">
+    <link rel="icon" type="image/png" sizes="32x32" href="<?= getSiteLogo() ?>">
+    <link rel="icon" type="image/png" sizes="16x16" href="<?= getSiteLogo() ?>">
+    <link rel="apple-touch-icon" href="<?= getSiteLogo() ?>">
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Photo - Wish2Padel</title>
@@ -31,18 +31,22 @@
 
     <div class="row g-4">
     <?php while($p = $photos->fetch_assoc()): 
-        // Logic for image source
-        // Original: if (!empty($p['file_name']) && file_exists($uploadDir.$p['file_name']))
-        // We use asset() so we just build the path.
         $imgSrc = (!empty($p['file_name'])) 
                     ? asset('uploads/gallery/'.$p['file_name']) 
                     : asset('assets/default-photo.jpg');
+        $videoUrl = $p['video_url'] ?? null;
+        $isVideo = !empty($videoUrl);
     ?>
     <div class="col-12 col-sm-6 col-md-4 col-lg-3">
         <div class="card border-0 shadow-sm rounded-4 gallery-card h-100">
-            <div class="img-wrap">
+            <div class="img-wrap position-relative">
                 <img src="<?= $imgSrc ?>" class="img-fluid" alt="Photo"
                      data-bs-toggle="modal" data-bs-target="#photoModal<?= $p['id'] ?>" style="cursor:pointer;">
+                <?php if($isVideo): ?>
+                <div class="position-absolute top-50 start-50 translate-middle pointer-events-none" style="pointer-events:none;">
+                    <i class="bi bi-play-circle-fill text-white" style="font-size: 3rem; opacity: 0.8; text-shadow: 0 0 10px black;"></i>
+                </div>
+                <?php endif; ?>
             </div>
         </div>
     </div>
@@ -51,8 +55,26 @@
     <div class="modal fade" id="photoModal<?= $p['id'] ?>" tabindex="-1" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered modal-xl">
         <div class="modal-content bg-transparent border-0">
-          <div class="modal-body p-0">
-            <img src="<?= $imgSrc ?>" class="img-fluid w-100" alt="Photo">
+          <div class="modal-body p-0 position-relative">
+            <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3 z-3" data-bs-dismiss="modal"></button>
+            <?php if ($isVideo): ?>
+                <div class="ratio ratio-16x9">
+                    <?php
+                        $embedUrl = $videoUrl;
+                        if (strpos($videoUrl, 'youtube.com/watch?v=') !== false) {
+                            $parts = parse_url($videoUrl);
+                            parse_str($parts['query'] ?? '', $query);
+                            if(isset($query['v'])) $embedUrl = "https://www.youtube.com/embed/" . $query['v'];
+                        } elseif (strpos($videoUrl, 'youtu.be/') !== false) {
+                            $path = parse_url($videoUrl, PHP_URL_PATH);
+                            $embedUrl = "https://www.youtube.com/embed" . $path;
+                        }
+                    ?>
+                    <iframe src="<?= $embedUrl ?>" allowfullscreen></iframe>
+                </div>
+            <?php else: ?>
+                <img src="<?= $imgSrc ?>" class="img-fluid w-100" alt="Photo">
+            <?php endif; ?>
           </div>
         </div>
       </div>

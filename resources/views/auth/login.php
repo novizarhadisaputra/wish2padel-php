@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link rel="icon" type="image/png" sizes="32x32" href="<?= asset('assets/image/w2p logo.jpeg') ?>">
-    <link rel="icon" type="image/png" sizes="16x16" href="<?= asset('assets/image/w2p logo.jpeg') ?>">
+    <link rel="icon" type="image/png" sizes="32x32" href="<?= getSiteLogo() ?>">
+    <link rel="icon" type="image/png" sizes="16x16" href="<?= getSiteLogo() ?>">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Login - Wish2Padel</title>
@@ -13,7 +13,7 @@
 <body class="login-page">
   <div class="login-container shadow-sm">
     <div class="logo">
-      <img src="<?= asset('assets/image/w2p.png') ?>" alt="Wish2Padel Logo" height="150" style="display:block;margin:0 auto;">
+      <img src="<?= getSiteLogo() ?>" alt="Wish2Padel Logo" height="150" style="display:block;margin:0 auto;">
     </div>
 
     <?php
