@@ -6,6 +6,12 @@ error_reporting(E_ALL);
 
 // Load Configuration (DB, Env, Session)
 require_once __DIR__ . '/../config/config.php';
+
+// Initialize Session (after config load so settings apply)
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
 require_once __DIR__ . '/../app/Helpers/view.php';
 
 // Autoloader (Simple manual autoloader for now, or Composer later)
@@ -43,7 +49,7 @@ $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 $script_name = dirname($_SERVER['SCRIPT_NAME']);
 $script_name = str_replace('\\', '/', $script_name); // Ensure forward slashes
 
-if (strpos($uri, $script_name) === 0) {
+if (strpos($uri, $script_name) === 0 && $script_name !== '/') {
     $uri = substr($uri, strlen($script_name));
 } else {
     // If we are rewriting from root, SCRIPT_NAME might contain /public but URI won't

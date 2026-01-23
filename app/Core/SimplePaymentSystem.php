@@ -1,12 +1,15 @@
 <?php
+declare(strict_types=1);
+
+namespace App\Core;
+
+use Exception;
 
 /**
  * Simple and Clean Payment System for Moyasar
  * Author: Padel League System
  * Version: 3.0 - Simplified for better reliability
  */
-
-declare(strict_types=1);
 
 // Ensure config is loaded for dynamic payment functions
 if (!function_exists('getDynamicPaymentAmount')) {

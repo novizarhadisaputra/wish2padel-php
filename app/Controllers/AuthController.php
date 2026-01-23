@@ -6,6 +6,13 @@ use App\Core\SimplePaymentSystem;
 
 class AuthController
 {
+    private $db;
+
+    public function __construct($db = null)
+    {
+        $this->db = $db ?? getDBConnection();
+    }
+
     public function logout()
     {
         session_destroy();
@@ -23,7 +30,7 @@ class AuthController
     public function postLogin()
     {
         // Login logic migrated from login_process.php
-        $conn = getDBConnection(); // Defined in config.php
+        $conn = $this->db;
 
         $identifier = trim($_POST['login_identifier'] ?? '');
         $password   = $_POST['login_password'] ?? '';

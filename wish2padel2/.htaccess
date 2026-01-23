@@ -1,0 +1,14 @@
+RewriteEngine On
+
+# Biarkan file/folder asli tetap bisa diakses
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# Kalau user akses dengan .php → redirect ke versi tanpa .php
+RewriteCond %{THE_REQUEST} \s/([^.]+)\.php[?\s] [NC]
+RewriteRule ^ %1 [R=301,L]
+
+# Kalau user akses tanpa .php → tetap jalankan file .php
+RewriteCond %{REQUEST_FILENAME}.php -f
+RewriteRule ^(.+?)/?$ $1.php [L]

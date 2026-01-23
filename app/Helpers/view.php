@@ -68,6 +68,10 @@ if (!function_exists('redirect')) {
         }
 
         header("Location: " . $url);
+        
+        if (defined('TESTING') && TESTING) {
+            return;
+        }
         exit;
     }
 }

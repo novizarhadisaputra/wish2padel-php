@@ -1,10 +1,18 @@
 <IfModule mod_rewrite.c>
-    <IfModule mod_negotiation.c>
-        Options -MultiViews -Indexes
-    </IfModule>
-
     RewriteEngine On
+    
+    # Block access to sensitive files
+    RewriteRule \.(env|sql|log|md)$ - [F,L,NC]
+    
+    # Block access to hidden directories
+    RewriteRule ^\.(.*) - [F,L]
 
-    # Redirect everything to the public directory
-    RewriteRule ^(.*)$ public/$1 [L]
+    # If the request is not for a real file or directory in the root
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    
+    # Rewrite everything to public/ folder
+    # We use QSA to append query strings and L to stop processing further rules
+    RewriteRule ^(.*)$ public/$1 [L,QSA]
 </IfModule>
+
