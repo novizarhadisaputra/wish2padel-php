@@ -3,7 +3,7 @@
 namespace App\Controllers;
 
 use DateTime;
-use SimplePaymentSystem;
+use App\Core\SimplePaymentSystem;
 
 class DashboardController
 {

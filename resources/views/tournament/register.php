@@ -554,6 +554,10 @@
                 display: block !important;
                 opacity: 1 !important;
             }
+
+            .progress { transition: width .4s; }
+            .form-control.is-invalid { border-color: #dc3545 !important; }
+            .form-control.is-valid { border-color: #198754 !important; }
         </style>
 
         <div class="container-fluid mt-5">
@@ -577,6 +581,14 @@
                 <?php endif; ?>
 
                 <form method="POST" id="regForm" novalidate onkeydown="return event.key != 'Enter';">
+                    
+                    <!-- ===== Progress Bar ===== -->
+                    <div class="mb-4">
+                        <div class="progress" style="height:6px; background:#333;">
+                            <div id="progressBar" class="progress-bar" style="width:20%; background:#f3e6b6;"></div>
+                        </div>
+                        <p class="text-center text-muted small mt-2">Step <span id="currentStep">1</span> of 5</p>
+                    </div>
                     <!-- Step 1 -->
                     <?php
 // Ambil semua team_name dari database untuk dicek di JS nanti
@@ -694,53 +706,136 @@ function showError(input, message) {
       return str.trim().toLowerCase().replace(/\s+/g, ' ');
     }
 
-    function validateMembers() {
-      const inputs = document.querySelectorAll(".player-input");
-      const values = [];
-      let hasError = false;
-
-      // Ambil nama captain dari Step 1
-      const captainName = normalizeName(document.getElementById("captain_name").value);
-
-      inputs.forEach(input => {
-        const val = normalizeName(input.value);
-        if (val) {
-          input.classList.remove("is-invalid");
-
-          // Cek apakah sama dengan nama captain
-          if (val === captainName) {
-            input.classList.add("is-invalid");
-            input.nextElementSibling.innerText = "This player name matches the captain. Please remove it.";
-            hasError = true;
-          }
-          // Cek duplikat antar pemain
-          else if (values.includes(val)) {
-            input.classList.add("is-invalid");
-            input.nextElementSibling.innerText = "This player name is duplicated.";
-            hasError = true;
-          } else {
-            values.push(val);
-          }
-        }
-      });
-
-      if (!hasError) nextStep(2);
-    }
-
+    // === Add Player (max 12) ===
     function addMember() {
       const container = document.getElementById("membersContainer");
       const count = container.querySelectorAll(".player-input").length + 1;
       if (count > 12) return alert("Maximum 12 players allowed.");
 
       const div = document.createElement("div");
-      div.className = "mb-3";
+      div.className = "mb-3 position-relative";
       div.innerHTML = `
         <label for="player_${count}" class="form-label">Player ${count} Name</label>
         <input type="text" name="player_name[]" id="player_${count}" class="form-control player-input"
           placeholder="Full Name" autocomplete="name" required>
-        <div class="invalid-feedback">Player name must not be the same as another player or the captain.</div>
+        <small class="text-danger error-msg" style="display:none;"></small>
       `;
       container.appendChild(div);
+      attachDuplicateCheck(div.querySelector('input'));
+    }
+
+    // === Validation All Names (local + DB) ===
+    async function validateAllNames() {
+      const inputs = document.querySelectorAll('.player-input');
+      const counts = {};
+      const duplicates = [];
+
+      // normalize names
+      inputs.forEach(i => {
+        const val = normalizeName(i.value);
+        if (val) counts[val] = (counts[val] || 0) + 1;
+      });
+
+      // find local duplicates
+      for (const [n, total] of Object.entries(counts)) {
+        if (total > 1) duplicates.push(n);
+      }
+
+      // reset errors
+      inputs.forEach(clearError);
+
+      // mark local duplicates
+      inputs.forEach(i => {
+        const val = normalizeName(i.value);
+        if (duplicates.includes(val) && val !== '') {
+          showDuplicateError(i, "This name already exists in your team.");
+        }
+      });
+
+      // check database for unique names
+      const uniqueNames = Object.keys(counts);
+      for (const n of uniqueNames) {
+        try {
+          const url = window.location.pathname + "?check_member_name=" + encodeURIComponent(n);
+          const res = await fetch(url);
+          const data = await res.json();
+          if (data.exists) {
+            inputs.forEach(i => {
+              if (normalizeName(i.value) === n) {
+              //if (i.value.trim().toLowerCase().replace(/\s+/g, ' ') === n) { 
+                showDuplicateError(i, "This player name already exists in another team.");
+              }
+            });
+          }
+        } catch (e) {
+          console.error("DB check failed:", e);
+        }
+      }
+
+      // Enable/Disable Next Button based on errors
+      /* We handle this in validateMembers check */
+    }
+
+    // === Helper Functions ===
+    function showDuplicateError(input, msg) {
+      input.classList.add('is-invalid');
+      // Find or create error msg container
+      let err = input.parentElement.querySelector('.error-msg');
+      if(!err) {
+         // Fallback if structure is different
+         err = input.parentElement.querySelector('.invalid-feedback');
+      }
+      if(err) {
+        err.innerText = msg;
+        err.style.display = 'block';
+        err.classList.add('text-danger'); // ensure color
+      }
+    }
+
+    function clearError(input) {
+      input.classList.remove('is-invalid');
+      let err = input.parentElement.querySelector('.error-msg');
+       if(!err) {
+         err = input.parentElement.querySelector('.invalid-feedback');
+      }
+      if(err) {
+        err.innerText = '';
+        err.style.display = 'none';
+      }
+    }
+
+    function attachDuplicateCheck(input) {
+      input.addEventListener('input', validateAllNames);
+      input.addEventListener('keyup', validateAllNames); // Debounce if needed?
+    }
+    document.querySelectorAll('.player-input').forEach(inp => attachDuplicateCheck(inp));
+
+    // === Final Validation Before Next ===
+    async function validateMembers() {
+       // Trigger full validation first
+       await validateAllNames();
+
+       // Check if any errors persist
+       const inputs = document.querySelectorAll('.player-input');
+       let hasError = false;
+       let filledCount = 0;
+
+       inputs.forEach(i => {
+           if(i.classList.contains('is-invalid')) hasError = true;
+           if(i.value.trim()) filledCount++;
+       });
+
+       if (filledCount < 5) {
+           alert("Please enter at least 5 players.");
+           return;
+       }
+
+       if (hasError) {
+           alert("Please fix the errors before continuing.");
+           return;
+       }
+
+       nextStep(2);
     }
   </script>
 </section>
@@ -1072,9 +1167,23 @@ function validateUsernameBeforeNext() {
 
             let memberCount = 6;
 
+            let totalSteps = 5;
+
+            function updateProgress(stepNumber) {
+                const percent = (stepNumber / totalSteps) * 100;
+                const bar = document.getElementById("progressBar");
+                const stepText = document.getElementById("currentStep");
+                
+                if(bar) bar.style.width = percent + "%";
+                if(stepText) stepText.textContent = stepNumber;
+                
+                // Scroll to top
+                window.scrollTo(0, 0);
+            }
+
             function nextStep(step) {
-                const currentStep = document.querySelector(`#step${step}`);
-                const inputs = currentStep.querySelectorAll("input[required], select[required], textarea[required]");
+                const currentStepEl = document.querySelector(`#step${step}`);
+                const inputs = currentStepEl.querySelectorAll("input[required], select[required], textarea[required]");
 
                 let valid = true;
                 inputs.forEach(input => {
@@ -1094,7 +1203,7 @@ function validateUsernameBeforeNext() {
 
                 if (!valid) {
                     // Focus on the first invalid field that is visible
-                    const firstInvalid = currentStep.querySelector("input.is-invalid, select.is-invalid, textarea.is-invalid");
+                    const firstInvalid = currentStepEl.querySelector("input.is-invalid, select.is-invalid, textarea.is-invalid");
                     if (firstInvalid && firstInvalid.offsetParent !== null) {
                         firstInvalid.focus();
                     }
@@ -1104,28 +1213,23 @@ function validateUsernameBeforeNext() {
                 }
 
                 // Hide current step and show next step
-                currentStep.classList.remove('active');
+                currentStepEl.classList.remove('active');
                 const next = document.querySelector(`#step${step+1}`);
                 if (next) {
                     next.classList.add('active');
+                    updateProgress(step + 1);
                 }
             }
 
             function addMember() {
-                if (memberCount < 12) {
-                    memberCount++;
-                    const div = document.createElement('div');
-                    div.className = 'mb-3';
-                    div.innerHTML = `<label for="player_${memberCount}" class="form-label">Player ${memberCount} Name</label>
-                         <input type="text" name="player_name[]" id="player_${memberCount}" class="form-control" autocomplete="name">`;
-                    document.getElementById('membersContainer').appendChild(div);
-                }
+                // Handled in Step 2 specific script now
             }
 
             function prevStep(step) {
                 document.querySelector(`#step${step}`).classList.remove('active');
                 const prev = document.querySelector(`#step${step-1}`);
                 prev.classList.add('active');
+                updateProgress(step - 1);
             }
 
             function validateAndSubmit() {

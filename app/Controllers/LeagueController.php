@@ -37,7 +37,7 @@ class LeagueController
         if ($leagueIds) {
             $in = implode(',', $leagueIds);
             $tournamentResult = $conn->query("
-                SELECT id, name, description, start_date, end_date, id_league 
+                SELECT id, name, description, start_date, end_date, registration_until, id_league 
                 FROM tournaments 
                 WHERE id_league IN ($in)
                 ORDER BY start_date DESC
@@ -51,8 +51,48 @@ class LeagueController
         // The view `regis.php` instantiates `SimplePaymentSystem`. 
         // We will pass the data needed to the view.
         
+
+        // Fetch Sponsors
+        $resultSponsors = $conn->query("SELECT * FROM sponsors ORDER BY sponsor_id DESC");
+        
+        $partnerSponsors = [];
+        $premiumSponsors = [];
+        $goldSponsors = [];
+        $standardSponsors = [];
+        
+        if ($resultSponsors) {
+            while ($row = $resultSponsors->fetch_assoc()) {
+                switch ($row['type'] ?? '') {
+                    case 'partner':
+                        $partnerSponsors[] = $row;
+                        break;
+                    case 'premium':
+                        $premiumSponsors[] = $row;
+                        break;
+                    case 'gold':
+                        $goldSponsors[] = $row;
+                        break;
+                    case 'standard':
+                        $standardSponsors[] = $row;
+                        break;
+                }
+            }
+        }
+
+        // Fetch Collaborators
+        $resultCollaborators = $conn->query("SELECT * FROM sponsors WHERE status = 'collaborate' ORDER BY sponsor_id DESC");
+        $collaborators = [];
+        if ($resultCollaborators) {
+            while ($row = $resultCollaborators->fetch_assoc()) {
+                $collaborators[] = $row;
+            }
+        }
+        
     
-        view('registration', compact('currentLeagues', 'tournaments', 'team_id', 'today', 'currentYear', 'conn'));
+        view('registration', compact(
+            'currentLeagues', 'tournaments', 'team_id', 'today', 'currentYear', 'conn',
+            'partnerSponsors', 'premiumSponsors', 'goldSponsors', 'standardSponsors', 'collaborators'
+        ));
     }
 
     public function hub()

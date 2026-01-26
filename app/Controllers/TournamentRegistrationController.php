@@ -36,6 +36,20 @@ class TournamentRegistrationController
             exit;
         }
 
+        // AJAX Check Member Name (from Legacy)
+        if (isset($_GET['check_member_name'])) {
+            $name = strtolower(trim($_GET['check_member_name']));
+            $stmt = $conn->prepare("SELECT COUNT(*) FROM team_members_info WHERE LOWER(player_name)=?");
+            $stmt->bind_param("s", $name);
+            $stmt->execute();
+            $stmt->bind_result($count);
+            $stmt->fetch();
+            $stmt->close();
+            header('Content-Type: application/json');
+            echo json_encode(['exists' => $count > 0]);
+            exit;
+        }
+
         // Check if user is logged in and get team ID
         $team_id = null;
         if ($username) {
