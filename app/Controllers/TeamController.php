@@ -12,16 +12,19 @@ class TeamController
     {
         $conn = getDBConnection();
         $username = $_SESSION['username'] ?? null;
-
-        $sql = "SELECT id, team_name FROM team_info ORDER BY team_name ASC";
-        $result = $conn->query($sql);
         $teams = [];
-        while ($row = $result->fetch_assoc()) {
-            $teamId = $row['id'];
-            $lvlRes = $conn->query("SELECT level FROM team_contact_details WHERE team_id = $teamId LIMIT 1");
-            $lvlRow = $lvlRes->fetch_assoc();
-            $row['level'] = $lvlRow['level'] ?? '';
-            $teams[] = $row;
+        if ($conn) {
+            $sql = "SELECT id, team_name FROM team_info ORDER BY team_name ASC";
+            $result = $conn->query($sql);
+            if ($result) {
+                while ($row = $result->fetch_assoc()) {
+                    $teamId = $row['id'];
+                    $lvlRes = $conn->query("SELECT level FROM team_contact_details WHERE team_id = $teamId LIMIT 1");
+                    $lvlRow = $lvlRes ? $lvlRes->fetch_assoc() : null;
+                    $row['level'] = $lvlRow['level'] ?? '';
+                    $teams[] = $row;
+                }
+            }
         }
 
         $levels = [
@@ -46,34 +49,45 @@ class TeamController
             return;
         }
 
-        $team_stmt = $conn->prepare("
-            SELECT ti.id AS team_id,
-                   t.id AS tournament_id, t.name AS tournament_name,
-                   t.start_date, t.end_date, t.status AS tournament_status,
-                   l.date AS league_year
-            FROM team_info ti
-            JOIN tournaments t ON t.id = ti.tournament_id
-            JOIN league l ON l.id = t.id_league
-            WHERE ti.id = ?
-        ");
-        $team_stmt->bind_param("i", $team_id);
-        $team_stmt->execute();
-        $team = $team_stmt->get_result()->fetch_assoc();
-        $team_stmt->close();
+        $team = null;
+        $windows = [];
+        $seasonYear = date('Y');
 
-        date_default_timezone_set("Asia/Riyadh");
-        $seasonYear = $team['league_year'] ?? date('Y');
+        if ($conn) {
+            $team_stmt = $conn->prepare("
+                SELECT ti.id AS team_id,
+                       t.id AS tournament_id, t.name AS tournament_name,
+                       t.start_date, t.end_date, t.status AS tournament_status,
+                       l.date AS league_year
+                FROM team_info ti
+                JOIN tournaments t ON t.id = ti.tournament_id
+                JOIN league l ON l.id = t.id_league
+                WHERE ti.id = ?
+            ");
+            if ($team_stmt) {
+                $team_stmt->bind_param("i", $team_id);
+                $team_stmt->execute();
+                $team = $team_stmt->get_result()->fetch_assoc();
+                $team_stmt->close();
+            }
 
-        $win_stmt = $conn->prepare("
-            SELECT id, start_date, end_date
-            FROM transfer_windows
-            WHERE (YEAR(start_date) = ? OR YEAR(end_date) = ?)
-            ORDER BY start_date ASC
-        ");
-        $win_stmt->bind_param("ii", $seasonYear, $seasonYear);
-        $win_stmt->execute();
-        $windows = $win_stmt->get_result()->fetch_all(MYSQLI_ASSOC);
-        $win_stmt->close();
+            date_default_timezone_set("Asia/Riyadh");
+            $seasonYear = $team['league_year'] ?? date('Y');
+
+            $win_stmt = $conn->prepare("
+                SELECT id, start_date, end_date
+                FROM transfer_windows
+                WHERE (YEAR(start_date) = ? OR YEAR(end_date) = ?)
+                ORDER BY start_date ASC
+            ");
+            if ($win_stmt) {
+                $win_stmt->bind_param("ii", $seasonYear, $seasonYear);
+                $win_stmt->execute();
+                $windows_res = $win_stmt->get_result();
+                $windows = $windows_res ? $windows_res->fetch_all(MYSQLI_ASSOC) : [];
+                $win_stmt->close();
+            }
+        }
 
         view('team.windows', compact('windows', 'seasonYear'));
     }
@@ -84,36 +98,57 @@ class TeamController
         $username = $_SESSION['username'] ?? null;
         $team_id = $_GET['id'] ?? 1;
 
-        $team_sql = "SELECT ti.id, ti.team_name, ti.captain_name, ti.logo, ti.created_at, ti.tournament_id, t.name AS tournament_name FROM team_info ti LEFT JOIN tournaments t ON ti.tournament_id = t.id WHERE ti.id = ?";
-        $stmt = $conn->prepare($team_sql);
-        $stmt->bind_param("i", $team_id);
-        $stmt->execute();
-        $team = $stmt->get_result()->fetch_assoc();
-        $stmt->close();
+        $team = null;
+        $contact = null;
+        $final_members = [];
+        $resSchedule = null;
 
-        if (!$team) {
-            echo "<div class='alert alert-danger'>Team not found.</div>";
-            return;
+        if ($conn) {
+            $team_sql = "SELECT ti.id, ti.team_name, ti.captain_name, ti.logo, ti.created_at, ti.tournament_id, t.name AS tournament_name FROM team_info ti LEFT JOIN tournaments t ON ti.tournament_id = t.id WHERE ti.id = ?";
+            $stmt = $conn->prepare($team_sql);
+            if ($stmt) {
+                $stmt->bind_param("i", $team_id);
+                $stmt->execute();
+                $team = $stmt->get_result()->fetch_assoc();
+                $stmt->close();
+            }
+
+            if (!$team) {
+                echo "<div class='alert alert-danger'>Team not found.</div>";
+                return;
+            }
+
+            $contact_sql = "SELECT tcd.club, tcd.city, tcd.division, tcd.notes, d.division_name FROM team_contact_details tcd LEFT JOIN divisions d ON tcd.division = d.id WHERE tcd.team_id = ?";
+            $stmt = $conn->prepare($contact_sql);
+            if ($stmt) {
+                $stmt->bind_param("i", $team_id);
+                $stmt->execute();
+                $contact = $stmt->get_result()->fetch_assoc();
+                $stmt->close();
+            }
+
+            $sql_members = "SELECT player_name, age, profile, role, position FROM team_members_info WHERE team_id = ? ORDER BY (role = 'Captain') DESC, player_name ASC";
+            $stmt = $conn->prepare($sql_members);
+            if ($stmt) {
+                $stmt->bind_param("i", $team_id);
+                $stmt->execute();
+                $res_members = $stmt->get_result();
+                $final_members = $res_members ? $res_members->fetch_all(MYSQLI_ASSOC) : [];
+                $stmt->close();
+            }
+
+            $sql_schedule = "SELECT m.id, m.journey, m.scheduled_date, m.status, t1.team_name AS team1, t1.logo AS team1_logo, m.team1_id, t2.team_name AS team2, t2.logo AS team2_logo, m.team2_id FROM matches m LEFT JOIN team_info t1 ON m.team1_id = t1.id LEFT JOIN team_info t2 ON m.team2_id = t2.id WHERE m.team1_id = ? OR m.team2_id = ? ORDER BY m.scheduled_date ASC";
+            $stmt = $conn->prepare($sql_schedule);
+            if ($stmt) {
+                $stmt->bind_param("ii", $team_id, $team_id);
+                $stmt->execute();
+                $resSchedule = $stmt->get_result();
+                $stmt->close();
+            }
+        } else {
+            // Need a team check even without conn to avoid "Team not found" if we want to be consistent
+            // But if no conn, showing error or empty profile is fine.
         }
-
-        $contact_sql = "SELECT tcd.club, tcd.city, tcd.division, tcd.notes, d.division_name FROM team_contact_details tcd LEFT JOIN divisions d ON tcd.division = d.id WHERE tcd.team_id = ?";
-        $stmt = $conn->prepare($contact_sql);
-        $stmt->bind_param("i", $team_id);
-        $stmt->execute();
-        $contact = $stmt->get_result()->fetch_assoc();
-
-        $sql_members = "SELECT player_name, age, profile, role, position FROM team_members_info WHERE team_id = ? ORDER BY (role = 'Captain') DESC, player_name ASC";
-        $stmt = $conn->prepare($sql_members);
-        $stmt->bind_param("i", $team_id);
-        $stmt->execute();
-        $res_members = $stmt->get_result();
-        $final_members = $res_members ? $res_members->fetch_all(MYSQLI_ASSOC) : [];
-
-        $sql_schedule = "SELECT m.id, m.journey, m.scheduled_date, m.status, t1.team_name AS team1, t1.logo AS team1_logo, m.team1_id, t2.team_name AS team2, t2.logo AS team2_logo, m.team2_id FROM matches m LEFT JOIN team_info t1 ON m.team1_id = t1.id LEFT JOIN team_info t2 ON m.team2_id = t2.id WHERE m.team1_id = ? OR m.team2_id = ? ORDER BY m.scheduled_date ASC";
-        $stmt = $conn->prepare($sql_schedule);
-        $stmt->bind_param("ii", $team_id, $team_id);
-        $stmt->execute();
-        $resSchedule = $stmt->get_result();
 
         view('team.profile', compact('team', 'contact', 'final_members', 'resSchedule'));
     }
@@ -131,62 +166,88 @@ class TeamController
         if (!$team_id) {
              redirect('/login');
         }
-        
-        $stmt = $conn->prepare("SELECT * FROM team_info WHERE id = ?");
-        $stmt->bind_param("i", $team_id);
-        $stmt->execute();
-        $team_info = $stmt->get_result()->fetch_assoc();
-        $stmt->close();
-        
-        $stmt = $conn->prepare("SELECT * FROM team_contact_details WHERE team_id = ?");
-        $stmt->bind_param("i", $team_id);
-        $stmt->execute();
-        $team_contact = $stmt->get_result()->fetch_assoc();
-        $stmt->close();
-        
-        $stmt = $conn->prepare("SELECT * FROM team_members_info WHERE team_id = ?");
-        $stmt->bind_param("i", $team_id);
-        $stmt->execute();
-        $team_members = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
-        $stmt->close();
-        
-        date_default_timezone_set("Asia/Riyadh");
-        $now = date("Y-m-d H:i:s");
-        
-        $team_stmt = $conn->prepare("SELECT ti.*, t.id AS tournament_id, t.name AS tournament_name, t.start_date, t.end_date, t.status AS tournament_status, l.date AS league_year FROM team_info ti JOIN tournaments t ON t.id = ti.tournament_id JOIN league l ON l.id = t.id_league WHERE ti.id = ?");
-        $team_stmt->bind_param("i", $team_id);
-        $team_stmt->execute();
-        $team = $team_stmt->get_result()->fetch_assoc();
-        $team_stmt->close();
-        
-        $leagueYear = $team['league_year'] ?? date('Y');
+
+        $team_info = null;
+        $team_contact = null;
+        $team_members = [];
+        $team = null;
         $tournament = [
-            'id'         => $team['tournament_id'] ?? null,
-            'status'     => $team['tournament_status'] ?? null,
-            'name'       => $team['tournament_name'] ?? null,
-            'start_date' => $team['start_date'] ?? null,
-            'league_year'=> $leagueYear,
+            'id'         => null,
+            'status'     => null,
+            'name'       => null,
+            'start_date' => null,
+            'league_year'=> date('Y'),
         ];
-        
-        $seasonYear = (int)$leagueYear;
         $activeWindow = null;
         $activeWindowLabel = null;
         
-        $stmt = $conn->prepare("SELECT id, start_date, end_date FROM transfer_windows WHERE (YEAR(start_date) = ? OR YEAR(end_date) = ?) ORDER BY start_date ASC LIMIT 2");
-        $stmt->bind_param("ii", $seasonYear, $seasonYear);
-        $stmt->execute();
-        $res = $stmt->get_result();
-        $windows = [];
-        while ($row = $res->fetch_assoc()) { $windows[] = $row; }
-        $stmt->close();
-        
-        foreach ($windows as $idx => $w) {
-            if ($w['start_date'] <= $now && $w['end_date'] >= $now) {
-                $activeWindow = $w;
-                $activeWindowLabel = ($idx === 0) ? "First Transfer Window" : "Second Transfer Window";
-                break;
+        if ($conn) {
+            $stmt = $conn->prepare("SELECT * FROM team_info WHERE id = ?");
+            if ($stmt) {
+                $stmt->bind_param("i", $team_id);
+                $stmt->execute();
+                $team_info = $stmt->get_result()->fetch_assoc();
+                $stmt->close();
+            }
+            
+            $stmt = $conn->prepare("SELECT * FROM team_contact_details WHERE team_id = ?");
+            if ($stmt) {
+                $stmt->bind_param("i", $team_id);
+                $stmt->execute();
+                $team_contact = $stmt->get_result()->fetch_assoc();
+                $stmt->close();
+            }
+            
+            $stmt = $conn->prepare("SELECT * FROM team_members_info WHERE team_id = ?");
+            if ($stmt) {
+                $stmt->bind_param("i", $team_id);
+                $stmt->execute();
+                $res_m = $stmt->get_result();
+                $team_members = $res_m ? $res_m->fetch_all(MYSQLI_ASSOC) : [];
+                $stmt->close();
+            }
+            
+            date_default_timezone_set("Asia/Riyadh");
+            $now = date("Y-m-d H:i:s");
+            
+            $team_stmt = $conn->prepare("SELECT ti.*, t.id AS tournament_id, t.name AS tournament_name, t.start_date, t.end_date, t.status AS tournament_status, l.date AS league_year FROM team_info ti JOIN tournaments t ON t.id = ti.tournament_id JOIN league l ON l.id = t.id_league WHERE ti.id = ?");
+            if ($team_stmt) {
+                $team_stmt->bind_param("i", $team_id);
+                $team_stmt->execute();
+                $team = $team_stmt->get_result()->fetch_assoc();
+                $team_stmt->close();
+            }
+            
+            $leagueYear = $team['league_year'] ?? date('Y');
+            $tournament = [
+                'id'         => $team['tournament_id'] ?? null,
+                'status'     => $team['tournament_status'] ?? null,
+                'name'       => $team['tournament_name'] ?? null,
+                'start_date' => $team['start_date'] ?? null,
+                'league_year'=> $leagueYear,
+            ];
+            
+            $seasonYear = (int)$leagueYear;
+            $stmt = $conn->prepare("SELECT id, start_date, end_date FROM transfer_windows WHERE (YEAR(start_date) = ? OR YEAR(end_date) = ?) ORDER BY start_date ASC LIMIT 2");
+            if ($stmt) {
+                $stmt->bind_param("ii", $seasonYear, $seasonYear);
+                $stmt->execute();
+                $res = $stmt->get_result();
+                $windows = [];
+                while ($row = $res->fetch_assoc()) { $windows[] = $row; }
+                $stmt->close();
+                
+                foreach ($windows as $idx => $w) {
+                    if ($w['start_date'] <= $now && $w['end_date'] >= $now) {
+                        $activeWindow = $w;
+                        $activeWindowLabel = ($idx === 0) ? "First Transfer Window" : "Second Transfer Window";
+                        break;
+                    }
+                }
             }
         }
+
+        $canEditMembers = ($activeWindow !== null);
         $canEditMembers = ($activeWindow !== null);
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -312,26 +373,34 @@ class TeamController
         }
         
         $players = [];
-        $res1 = $conn->query("SELECT username AS name FROM team_account WHERE team_id = $team_id");
-        while($r = $res1->fetch_assoc()) $players[] = $r['name'];
-        
-        $res2 = $conn->query("SELECT player_name AS name FROM team_members_info WHERE team_id = $team_id");
-        while($r = $res2->fetch_assoc()) $players[] = $r['name'];
-        
-        $matches_res = $conn->query("
-            SELECT 
-                m.id, m.journey, m.status, m.scheduled_date,
-                m.team1_id, m.team2_id,
-                t1.team_name AS team1_name, t1.logo AS team1_logo,
-                t2.team_name AS team2_name, t2.logo AS team2_logo,
-                tour.name AS tournament_name
-            FROM matches m
-            LEFT JOIN team_info t1 ON m.team1_id = t1.id
-            LEFT JOIN team_info t2 ON m.team2_id = t2.id
-            LEFT JOIN tournaments tour ON m.tournament_id = tour.id
-            WHERE m.team1_id = $team_id OR m.team2_id = $team_id
-            ORDER BY m.scheduled_date ASC
-        ");
+        $matches_res = null;
+
+        if ($conn) {
+            $res1 = $conn->query("SELECT username AS name FROM team_account WHERE team_id = $team_id");
+            if ($res1) {
+                while($r = $res1->fetch_assoc()) $players[] = $r['name'];
+            }
+            
+            $res2 = $conn->query("SELECT player_name AS name FROM team_members_info WHERE team_id = $team_id");
+            if ($res2) {
+                while($r = $res2->fetch_assoc()) $players[] = $r['name'];
+            }
+            
+            $matches_res = $conn->query("
+                SELECT 
+                    m.id, m.journey, m.status, m.scheduled_date,
+                    m.team1_id, m.team2_id,
+                    t1.team_name AS team1_name, t1.logo AS team1_logo,
+                    t2.team_name AS team2_name, t2.logo AS team2_logo,
+                    tour.name AS tournament_name
+                FROM matches m
+                LEFT JOIN team_info t1 ON m.team1_id = t1.id
+                LEFT JOIN team_info t2 ON m.team2_id = t2.id
+                LEFT JOIN tournaments tour ON m.tournament_id = tour.id
+                WHERE m.team1_id = $team_id OR m.team2_id = $team_id
+                ORDER BY m.scheduled_date ASC
+            ");
+        }
 
         view('team.scheduled', compact('matches_res', 'players', 'team_id', 'conn'));
     }

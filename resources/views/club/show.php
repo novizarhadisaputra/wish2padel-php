@@ -19,6 +19,7 @@
         <?php view('partials.navbar'); ?>
         
         <section class="container bg-white mt-5 mb-5 p-5 shadow-lg border rounded">
+            <?php if ($center): ?>
             <div class="row mb-5 align-items-center">
                 <div class="col-md-4 text-center">
                     <img src="uploads/club/<?= htmlspecialchars($center['logo_url']) ?>" 
@@ -37,26 +38,38 @@
                     <p><i class="bi bi-globe"></i> <a href="<?= htmlspecialchars($center['website']) ?>" target="_blank">Website</a></p>
                 </div>
             </div>
+            <?php else: ?>
+                <div class="alert alert-info py-4">
+                    <h4 class="alert-heading">Club Not Found</h4>
+                    <p>This club details are unavailable at the moment. Please try again later.</p>
+                </div>
+            <?php endif; ?>
         
             <div class="mb-5">
                 <h2 class="fw-bold mb-4">Field</h2>
                 <div class="row g-4">
-                    <?php while($p = $pistas->fetch_assoc()): ?>
-                        <div class="col-md-4">
-                            <div class="card shadow-sm border-0 h-100">
-                                <div class="card-body text-center">
-                                    <h5 class="fw-bold"><?= htmlspecialchars($p['name']) ?></h5>
-                                    <p class="text-muted">Amount: <?= htmlspecialchars($p['quantity']) ?></p>
+                    <?php if($pistas): ?>
+                        <?php while($p = $pistas->fetch_assoc()): ?>
+                            <div class="col-md-4">
+                                <div class="card shadow-sm border-0 h-100">
+                                    <div class="card-body text-center">
+                                        <h5 class="fw-bold"><?= htmlspecialchars($p['name']) ?></h5>
+                                        <p class="text-muted">Amount: <?= htmlspecialchars($p['quantity']) ?></p>
+                                    </div>
                                 </div>
                             </div>
+                        <?php endwhile; ?>
+                    <?php else: ?>
+                        <div class="col-12 text-center text-muted">
+                            <p>No field information available.</p>
                         </div>
-                    <?php endwhile; ?>
+                    <?php endif; ?>
                 </div>
             </div>
         
             <div class="mb-5">
                 <h2 id="deskrip" class="fw-bold mb-3">About Club</h2>
-               <p class="lead"><?= $center['description'] ?></p>
+               <p class="lead"><?= htmlspecialchars($center['description'] ?? 'No description available.') ?></p>
             </div>
         
             <div class="mb-5">
@@ -71,13 +84,19 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <?php while($s = $schedules->fetch_assoc()): ?>
+                            <?php if($schedules): ?>
+                                <?php while($s = $schedules->fetch_assoc()): ?>
+                                    <tr>
+                                        <td><?= htmlspecialchars($s['day']) ?></td>
+                                        <td><?= htmlspecialchars($s['open_time']) ?></td>
+                                        <td><?= htmlspecialchars($s['close_time']) ?></td>
+                                    </tr>
+                                <?php endwhile; ?>
+                            <?php else: ?>
                                 <tr>
-                                    <td><?= htmlspecialchars($s['day']) ?></td>
-                                    <td><?= htmlspecialchars($s['open_time']) ?></td>
-                                    <td><?= htmlspecialchars($s['close_time']) ?></td>
+                                    <td colspan="3" class="text-center text-muted">No schedule available.</td>
                                 </tr>
-                            <?php endwhile; ?>
+                            <?php endif; ?>
                         </tbody>
                     </table>
                 </div>
@@ -86,21 +105,27 @@
             <div class="mb-5">
                 <h2 class="fw-bold mb-4">Photo</h2>
                 <div class="row g-4">
-                    <?php while($ph = $photos->fetch_assoc()): ?>
-                        <div class="col-6 col-md-3">
-                            <div class="card border-0 shadow-sm">
-                                <img src="uploads/club/<?= htmlspecialchars($ph['url']) ?>" 
-                                     class="card-img-top" 
-                                     alt="<?= htmlspecialchars($ph['caption']) ?>" 
-                                     style="object-fit:cover; height:200px;">
-                                <?php if ($ph['caption']): ?>
-                                    <div class="card-body text-center">
-                                        <small class="text-muted"><?= htmlspecialchars($ph['caption']) ?></small>
-                                    </div>
-                                <?php endif; ?>
+                    <?php if($photos): ?>
+                        <?php while($ph = $photos->fetch_assoc()): ?>
+                            <div class="col-6 col-md-3">
+                                <div class="card border-0 shadow-sm">
+                                    <img src="uploads/club/<?= htmlspecialchars($ph['url']) ?>" 
+                                         class="card-img-top" 
+                                         alt="<?= htmlspecialchars($ph['caption']) ?>" 
+                                         style="object-fit:cover; height:200px;">
+                                    <?php if ($ph['caption']): ?>
+                                        <div class="card-body text-center">
+                                            <small class="text-muted"><?= htmlspecialchars($ph['caption']) ?></small>
+                                        </div>
+                                    <?php endif; ?>
+                                </div>
                             </div>
+                        <?php endwhile; ?>
+                    <?php else: ?>
+                        <div class="col-12 text-center text-muted">
+                            <p>No photos available.</p>
                         </div>
-                    <?php endwhile; ?>
+                    <?php endif; ?>
                 </div>
             </div>
         </section>

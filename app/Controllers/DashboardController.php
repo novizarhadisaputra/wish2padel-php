@@ -18,11 +18,16 @@ class DashboardController
             exit();
         }
 
-        $t_stmt = $conn->prepare("SELECT tournament_id FROM team_info WHERE id = ?");
-        $t_stmt->bind_param("i", $team_id);
-        $t_stmt->execute();
-        $tournament_id = $t_stmt->get_result()->fetch_assoc()['tournament_id'] ?? 1;
-        $t_stmt->close();
+        $tournament_id = 1;
+        if ($conn) {
+            $t_stmt = $conn->prepare("SELECT tournament_id FROM team_info WHERE id = ?");
+            if ($t_stmt) {
+                $t_stmt->bind_param("i", $team_id);
+                $t_stmt->execute();
+                $tournament_id = $t_stmt->get_result()->fetch_assoc()['tournament_id'] ?? 1;
+                $t_stmt->close();
+            }
+        }
         
         $paymentSystem = new SimplePaymentSystem();
         $is_paid = $paymentSystem->isTeamPaid($team_id, $tournament_id);
@@ -36,108 +41,132 @@ class DashboardController
         $now = new DateTime();
         
         // Match checking logic (abbreviated for MVC, ideally moved to a service)
-        $matchResult = $conn->prepare("SELECT id, scheduled_date FROM matches WHERE (team1_id = ? OR team2_id = ?) AND status != 'completed'");
-        $matchResult->bind_param("ii", $team_id, $team_id);
-        $matchResult->execute();
-        $matchData = $matchResult->get_result();
-        
-        while ($match = $matchData->fetch_assoc()) {
-            $match_id = $match['id'];
-            $matchTime = new DateTime($match['scheduled_date']);
-        
-            $startWindow  = (clone $matchTime)->modify('-20 minutes');
-            $midWindow    = (clone $matchTime)->modify('+40 minutes');
-            $resultWindow = (clone $matchTime)->modify('+90 minutes');
-        
-            if ($now >= $startWindow && $now <= $midWindow) {
-                // Check if pairs declared
-                $pairCheck = $conn->prepare("
-                    SELECT COUNT(*) AS total_players 
-                    FROM pair_players
-                    WHERE pair_id IN (
-                        SELECT id FROM team_pairs WHERE match_id = ? AND team_id = ?
-                    )
-                ");
-                $pairCheck->bind_param("ii", $match_id, $team_id);
-                $pairCheck->execute();
-                $pairCount = $pairCheck->get_result()->fetch_assoc()['total_players'];
-                $pairCheck->close();
-        
-                if ($pairCount == 0) {
-                    $_SESSION['current_match_id'] = $match_id;
-                    header("Location: auth/auth_scheduled.php"); // Legacy redirect for now, should migrate later
-                    exit();
-                }
-            }
-        
-            if ($now >= $resultWindow) {
-                // Check result status
-                $resStmt = $conn->prepare("
-                    SELECT status FROM match_results WHERE match_id = ? AND team_id = ?
-                ");
-                $resStmt->bind_param("ii", $match_id, $team_id);
-                $resStmt->execute();
-                $res = $resStmt->get_result()->fetch_assoc();
-                $resStmt->close();
-        
-                if (!$res || strtolower($res['status']) !== 'accept') {
-                    $_SESSION['current_match_id'] = $match_id;
-                    header("Location: auth/auth_result.php"); // Legacy redirect for now
-                    exit();
+        if ($conn) {
+            $matchResult = $conn->prepare("SELECT id, scheduled_date FROM matches WHERE (team1_id = ? OR team2_id = ?) AND status != 'completed'");
+            if ($matchResult) {
+                $matchResult->bind_param("ii", $team_id, $team_id);
+                $matchResult->execute();
+                $matchData = $matchResult->get_result();
+                
+                while ($matchData && $match = $matchData->fetch_assoc()) {
+                    $match_id = $match['id'];
+                    $matchTime = new DateTime($match['scheduled_date']);
+                
+                    $startWindow  = (clone $matchTime)->modify('-20 minutes');
+                    $midWindow    = (clone $matchTime)->modify('+40 minutes');
+                    $resultWindow = (clone $matchTime)->modify('+90 minutes');
+                
+                    if ($now >= $startWindow && $now <= $midWindow) {
+                        // Check if pairs declared
+                        $pairCheck = $conn->prepare("
+                            SELECT COUNT(*) AS total_players 
+                            FROM pair_players
+                            WHERE pair_id IN (
+                                SELECT id FROM team_pairs WHERE match_id = ? AND team_id = ?
+                            )
+                        ");
+                        if ($pairCheck) {
+                            $pairCheck->bind_param("ii", $match_id, $team_id);
+                            $pairCheck->execute();
+                            $pairCount = $pairCheck->get_result()->fetch_assoc()['total_players'];
+                            $pairCheck->close();
+                    
+                            if ($pairCount == 0) {
+                                $_SESSION['current_match_id'] = $match_id;
+                                header("Location: auth/auth_scheduled.php"); 
+                                exit();
+                            }
+                        }
+                    }
+                
+                    if ($now >= $resultWindow) {
+                        // Check result status
+                        $resStmt = $conn->prepare("
+                            SELECT status FROM match_results WHERE match_id = ? AND team_id = ?
+                        ");
+                        if ($resStmt) {
+                            $resStmt->bind_param("ii", $match_id, $team_id);
+                            $resStmt->execute();
+                            $res = $resStmt->get_result()->fetch_assoc();
+                            $resStmt->close();
+                    
+                            if (!$res || strtolower($res['status']) !== 'accept') {
+                                $_SESSION['current_match_id'] = $match_id;
+                                header("Location: auth/auth_result.php"); 
+                                exit();
+                            }
+                        }
+                    }
                 }
             }
         }
         
         // Data gathering for view
-        $sqlTeam = "SELECT ti.id, ti.team_name, ti.captain_name, ti.logo, ti.tournament_id FROM team_info ti WHERE ti.id = ?";
-        $stmt = $conn->prepare($sqlTeam);
-        $stmt->bind_param("i", $team_id);
-        $stmt->execute();
-        $team = $stmt->get_result()->fetch_assoc();
-        
-        $sqlDetail = "SELECT division FROM team_contact_details WHERE team_id = ? LIMIT 1";
-        $stmt = $conn->prepare($sqlDetail);
-        $stmt->bind_param("i", $team_id);
-        $stmt->execute();
-        $selected_division = $stmt->get_result()->fetch_assoc()['division'] ?? null;
-        
-        $sqlT = "SELECT id, name, description, start_date FROM tournaments WHERE id = ?";
-        $stmt = $conn->prepare($sqlT);
-        $stmt->bind_param("i", $tournament_id);
-        $stmt->execute();
-        $tournament = $stmt->get_result()->fetch_assoc();
-
-        // Leaderboard Logic (Simplified/Extracted)
-        // Note: For brevity in controller, we might want to put this in a model/helper. 
-        // using the same logic as dashboard.php
-        $leaderboard = $this->getLeaderboard($conn, $tournament_id, $selected_division);
-        
-        // Schedule
-        $sqlSchedule = "
-            SELECT 
-                m.id, m.journey, m.team1_id, m.team2_id, m.scheduled_date, m.status,
-                t1.team_name AS team1, t1.logo AS team1_logo,
-                t2.team_name AS team2, t2.logo AS team2_logo
-            FROM matches m
-            JOIN team_info t1 ON t1.id = m.team1_id
-            JOIN team_info t2 ON t2.id = m.team2_id
-            WHERE m.tournament_id = ?
-              AND (m.team1_id = ? OR m.team2_id = ?)
-            ORDER BY m.scheduled_date ASC
-        ";
-        $stmt = $conn->prepare($sqlSchedule);
-        $stmt->bind_param("iii", $tournament_id, $team_id, $team_id);
-        $stmt->execute();
-        $resSchedule = $stmt->get_result();
-
-        // Division Label
+        $team = null;
+        $selected_division = null;
+        $tournament = null;
+        $leaderboard = [];
+        $resSchedule = null;
         $divisionLabel = '-';
-        if (!empty($selected_division)) {
-            $stmtDiv = $conn->prepare("SELECT division_name FROM divisions WHERE id = ?");
-            $stmtDiv->bind_param("i", $selected_division);
-            $stmtDiv->execute();
-            $resDiv = $stmtDiv->get_result()->fetch_assoc();
-            $divisionLabel = $resDiv['division_name'] ?? '-';
+
+        if ($conn) {
+            $sqlTeam = "SELECT ti.id, ti.team_name, ti.captain_name, ti.logo, ti.tournament_id FROM team_info ti WHERE ti.id = ?";
+            $stmt = $conn->prepare($sqlTeam);
+            if ($stmt) {
+                $stmt->bind_param("i", $team_id);
+                $stmt->execute();
+                $team = $stmt->get_result()->fetch_assoc();
+            }
+            
+            $sqlDetail = "SELECT division FROM team_contact_details WHERE team_id = ? LIMIT 1";
+            $stmt = $conn->prepare($sqlDetail);
+            if ($stmt) {
+                $stmt->bind_param("i", $team_id);
+                $stmt->execute();
+                $selected_division = $stmt->get_result()->fetch_assoc()['division'] ?? null;
+            }
+            
+            $sqlT = "SELECT id, name, description, start_date FROM tournaments WHERE id = ?";
+            $stmt = $conn->prepare($sqlT);
+            if ($stmt) {
+                $stmt->bind_param("i", $tournament_id);
+                $stmt->execute();
+                $tournament = $stmt->get_result()->fetch_assoc();
+            }
+
+            // Leaderboard Logic
+            $leaderboard = $this->getLeaderboard($conn, $tournament_id, $selected_division);
+            
+            // Schedule
+            $sqlSchedule = "
+                SELECT 
+                    m.id, m.journey, m.team1_id, m.team2_id, m.scheduled_date, m.status,
+                    t1.team_name AS team1, t1.logo AS team1_logo,
+                    t2.team_name AS team2, t2.logo AS team2_logo
+                FROM matches m
+                JOIN team_info t1 ON t1.id = m.team1_id
+                JOIN team_info t2 ON t2.id = m.team2_id
+                WHERE m.tournament_id = ?
+                  AND (m.team1_id = ? OR m.team2_id = ?)
+                ORDER BY m.scheduled_date ASC
+            ";
+            $stmt = $conn->prepare($sqlSchedule);
+            if ($stmt) {
+                $stmt->bind_param("iii", $tournament_id, $team_id, $team_id);
+                $stmt->execute();
+                $resSchedule = $stmt->get_result();
+            }
+
+            // Division Label
+            if (!empty($selected_division)) {
+                $stmtDiv = $conn->prepare("SELECT division_name FROM divisions WHERE id = ?");
+                if ($stmtDiv) {
+                    $stmtDiv->bind_param("i", $selected_division);
+                    $stmtDiv->execute();
+                    $resDiv = $stmtDiv->get_result()->fetch_assoc();
+                    $divisionLabel = $resDiv['division_name'] ?? '-';
+                }
+            }
         }
         
         view('dashboard.index', compact('team', 'tournament', 'leaderboard', 'resSchedule', 'selected_division', 'divisionLabel'));
@@ -148,7 +177,9 @@ class DashboardController
         // Ideally this should be in a Service or Model class.
         // For this task, I will replicate the logic inside the controller or pass it to view if it acts as ViewModel.
         // Since it's large, let's keep it in controller private method.
-        
+        $leaderboard = [];
+        if (!$conn) return $leaderboard;
+
         if (!empty($selected_division)) {
             $sqlTeams = "
                 SELECT ti.id AS team_id, ti.team_name, ti.logo, tcd.division

@@ -525,6 +525,17 @@ nav#maiavbar.navbar-fixed {
   position: relative;
 }
 
+.login-container:hover {
+  box-shadow: 0 0 30px #f3e6b6;
+}
+
+.logo {
+  display: block;
+  margin: 0 auto 25px auto;
+  width: 140px;
+  text-align: center;
+}
+
 .btn-submit {
   background-color: #88694A;
   color: #212121;

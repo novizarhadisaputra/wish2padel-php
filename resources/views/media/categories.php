@@ -29,7 +29,8 @@
     </div>
 
     <div class="row g-4">
-        <?php while($c = $categories->fetch_assoc()): ?>
+        <?php if($categories): ?>
+            <?php while($c = $categories->fetch_assoc()): ?>
         <div class="col-12 col-sm-6 col-md-3">
             <a href="<?= asset('media/photos?category_id=' . $c['id']) ?>" class="text-decoration-none">
                 <div class="card border-0 shadow-sm rounded-4 gallery-card h-100">
@@ -47,6 +48,11 @@
             </a>
         </div>
         <?php endwhile; ?>
+        <?php else: ?>
+            <div class="col-12 text-center text-white">
+                <p>No categories found for this media.</p>
+            </div>
+        <?php endif; ?>
     </div>
 </section>
 

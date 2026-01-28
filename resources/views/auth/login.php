@@ -24,7 +24,7 @@
     ?>
 
     <form id="loginForm" method="POST" action="<?= asset('login') ?>" novalidate>
-      <div class="mb-3">
+      <div class="mb-4">
         <label for="login_identifier" class="form-label">Username</label>
         <div class="input-group">
             <span class="input-group-text"><i class="bi bi-person-fill"></i></span>
@@ -32,7 +32,7 @@
         </div>
       </div>
 
-      <div class="mb-3">
+      <div class="mb-4">
         <label for="login_password" class="form-label">Password</label>
         <div class="input-group">
             <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>

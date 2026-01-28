@@ -48,7 +48,7 @@
                 LIMIT 1
             ");
         
-            if ($res && $row = $res->fetch_assoc()) {
+            if ($conn && $res && $row = $res->fetch_assoc()) {
                 $startDate = new DateTime($row['start_date']);
                 $threeDaysBefore = (clone $startDate)->modify('-3 days');
                 $today = new DateTime();
@@ -81,11 +81,21 @@
               </div>
         
                 <?php
-                    $doc_lineup = $conn->query("SELECT file_path FROM documents WHERE id = 1 LIMIT 1")->fetch_assoc();
-                    $doc_match  = $conn->query("SELECT file_path FROM documents WHERE id = 2 LIMIT 1")->fetch_assoc();
-                    
-                    $lineup_file = $doc_lineup['file_path'] ?? null;
-                    $match_file  = $doc_match['file_path'] ?? null;
+                    $lineup_file = null;
+                    $match_file  = null;
+                    if ($conn) {
+                        $doc_lineup = $conn->query("SELECT file_path FROM documents WHERE id = 1 LIMIT 1");
+                        if ($doc_lineup) {
+                            $row_lineup = $doc_lineup->fetch_assoc();
+                            $lineup_file = $row_lineup['file_path'] ?? null;
+                        }
+                        
+                        $doc_match = $conn->query("SELECT file_path FROM documents WHERE id = 2 LIMIT 1");
+                        if ($doc_match) {
+                            $row_match = $doc_match->fetch_assoc();
+                            $match_file = $row_match['file_path'] ?? null;
+                        }
+                    }
                 ?>
         
                 <div class="modal-body">
@@ -323,10 +333,10 @@
                             <div class="card-header bg-dark text-white fw-bold">Your Schedule</div>
                             <div class="card-body">
                                 <?php
-                                    if ($resSchedule->num_rows === 0) {
+                                    if (!$resSchedule || $resSchedule->num_rows === 0) {
                                         echo "<div class='text-muted'>There is no schedule for this team yet.</div>";
                                     }
-                                    while ($m = $resSchedule->fetch_assoc()):
+                                    while ($resSchedule && $m = $resSchedule->fetch_assoc()):
                                         $dateStr = date("l, d M Y, H:i", strtotime($m['scheduled_date']));
                                         $isHome = ((int)$m['team1_id'] === $team_id);
                         
@@ -337,34 +347,38 @@
                                         $team1Badge = $team2Badge = "";
                         
                                         if ($m['status'] === 'completed') {
-                                            $team1Res = $conn->query("
-                                                SELECT pairs_won, pairs_lost 
-                                                FROM match_results 
-                                                WHERE match_id = {$m['id']} AND team_id = {$m['team1_id']}
-                                                LIMIT 1
-                                            ")->fetch_assoc();
-                        
-                                            $team2Res = $conn->query("
-                                                SELECT pairs_won, pairs_lost 
-                                                FROM match_results 
-                                                WHERE match_id = {$m['id']} AND team_id = {$m['team2_id']}
-                                                LIMIT 1
-                                            ")->fetch_assoc();
-                        
-                                            if ($team1Res && $team2Res) {
-                                                $scoreText = "{$team1Res['pairs_won']} - {$team2Res['pairs_won']}";
-                        
-                                                if ($team1Res['pairs_won'] > $team2Res['pairs_won']) {
-                                                    $team1Badge = '<span class="text-success fw-bold">WIN</span>';
-                                                    $team2Badge = '<span class="text-danger fw-bold">LOSS</span>';
-                                                } elseif ($team1Res['pairs_won'] < $team2Res['pairs_won']) {
-                                                    $team1Badge = '<span class="text-danger fw-bold">LOSS</span>';
-                                                    $team2Badge = '<span class="text-success fw-bold">WIN</span>';
+                                            if ($conn) {
+                                                $team1ResQuery = $conn->query("
+                                                    SELECT pairs_won, pairs_lost 
+                                                    FROM match_results 
+                                                    WHERE match_id = {$m['id']} AND team_id = {$m['team1_id']}
+                                                    LIMIT 1
+                                                ");
+                                                $team1Res = $team1ResQuery ? $team1ResQuery->fetch_assoc() : null;
+                            
+                                                $team2ResQuery = $conn->query("
+                                                    SELECT pairs_won, pairs_lost 
+                                                    FROM match_results 
+                                                    WHERE match_id = {$m['id']} AND team_id = {$m['team2_id']}
+                                                    LIMIT 1
+                                                ");
+                                                $team2Res = $team2ResQuery ? $team2ResQuery->fetch_assoc() : null;
+                            
+                                                if ($team1Res && $team2Res) {
+                                                    $scoreText = "{$team1Res['pairs_won']} - {$team2Res['pairs_won']}";
+                            
+                                                    if ($team1Res['pairs_won'] > $team2Res['pairs_won']) {
+                                                        $team1Badge = '<span class="text-success fw-bold">WIN</span>';
+                                                        $team2Badge = '<span class="text-danger fw-bold">LOSS</span>';
+                                                    } elseif ($team1Res['pairs_won'] < $team2Res['pairs_won']) {
+                                                        $team1Badge = '<span class="text-danger fw-bold">LOSS</span>';
+                                                        $team2Badge = '<span class="text-success fw-bold">WIN</span>';
+                                                    } else {
+                                                        $team1Badge = $team2Badge = '<span class="text-secondary fw-bold">DRAW</span>';
+                                                    }
                                                 } else {
-                                                    $team1Badge = $team2Badge = '<span class="text-secondary fw-bold">DRAW</span>';
+                                                    $scoreText = "N/A";
                                                 }
-                                            } else {
-                                                $scoreText = "N/A";
                                             }
                                         }
                         
@@ -428,13 +442,15 @@
                                     ORDER BY points DESC, pp.player_name ASC
                                     LIMIT 5
                                 ";
-                                $stmt = $conn->prepare($sqlPlayers);
-                                $stmt->bind_param("i", $tournament['id']);
-                                $stmt->execute();
-                                $resPlayers = $stmt->get_result();
-                                
-                                while($p = $resPlayers->fetch_assoc()): 
-                                    $profile = !empty($p['profile']) ? "uploads/profile/".$p['profile'] : "uploads/profile/default.png";
+                                if ($conn) {
+                                    $stmt = $conn->prepare($sqlPlayers);
+                                    if ($stmt) {
+                                        $stmt->bind_param("i", $tournament['id']);
+                                        $stmt->execute();
+                                        $resPlayers = $stmt->get_result();
+                                        
+                                        while($resPlayers && $p = $resPlayers->fetch_assoc()): 
+                                            $profile = !empty($p['profile']) ? "uploads/profile/".$p['profile'] : "uploads/profile/default.png";
                                 ?>
                                     <div class="player-card">
                                         <img src="<?= $profile ?>" class="player-avatar">
@@ -443,7 +459,9 @@
                                             <small class="text-muted"><?= htmlspecialchars($p['team_name']) ?></small>
                                         </div>
                                     </div>
-                                <?php endwhile; ?>
+                                <?php endwhile; 
+                                    }
+                                } ?>
                                 
                                 <div class="text-center mt-3">
                                     <small class="text-muted">Coming soon: Full player stats.</small>

@@ -30,6 +30,7 @@
     </div>
 
     <div class="row g-4">
+    <?php if($photos): ?>
     <?php while($p = $photos->fetch_assoc()): 
         $imgSrc = (!empty($p['file_name'])) 
                     ? asset('uploads/gallery/'.$p['file_name']) 
@@ -80,6 +81,11 @@
       </div>
     </div>
     <?php endwhile; ?>
+    <?php else: ?>
+        <div class="col-12 text-center text-white py-5">
+            <p>No photos found in this category.</p>
+        </div>
+    <?php endif; ?>
     </div>
 
 </section>

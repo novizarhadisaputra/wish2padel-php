@@ -28,39 +28,55 @@ class TournamentRegistrationController
         // AJAX Check Username
         if (isset($_GET['check_username'])) {
             $usernameCheck = trim($_GET['check_username']);
-            $stmt = $conn->prepare("SELECT id FROM team_account WHERE username = ?");
-            $stmt->bind_param("s", $usernameCheck);
-            $stmt->execute();
-            $result = $stmt->get_result();
-            echo json_encode(["exists" => $result->fetch_assoc() ? true : false]);
+            $exists = false;
+            if ($conn) {
+                $stmt = $conn->prepare("SELECT id FROM team_account WHERE username = ?");
+                if ($stmt) {
+                    $stmt->bind_param("s", $usernameCheck);
+                    $stmt->execute();
+                    $result = $stmt->get_result();
+                    $exists = $result && $result->fetch_assoc() ? true : false;
+                    $stmt->close();
+                }
+            }
+            echo json_encode(["exists" => $exists]);
             exit;
         }
 
         // AJAX Check Member Name (from Legacy)
         if (isset($_GET['check_member_name'])) {
             $name = strtolower(trim($_GET['check_member_name']));
-            $stmt = $conn->prepare("SELECT COUNT(*) FROM team_members_info WHERE LOWER(player_name)=?");
-            $stmt->bind_param("s", $name);
-            $stmt->execute();
-            $stmt->bind_result($count);
-            $stmt->fetch();
-            $stmt->close();
+            $exists = false;
+            if ($conn) {
+                $stmt = $conn->prepare("SELECT COUNT(*) FROM team_members_info WHERE LOWER(player_name)=?");
+                if ($stmt) {
+                    $stmt->bind_param("s", $name);
+                    $stmt->execute();
+                    $count = 0;
+                    $stmt->bind_result($count);
+                    $stmt->fetch();
+                    $exists = $count > 0;
+                    $stmt->close();
+                }
+            }
             header('Content-Type: application/json');
-            echo json_encode(['exists' => $count > 0]);
+            echo json_encode(['exists' => $exists]);
             exit;
         }
 
         // Check if user is logged in and get team ID
         $team_id = null;
-        if ($username) {
+        if ($username && $conn) {
             $stmt = $conn->prepare("SELECT team_id FROM team_account WHERE username = ?");
-            $stmt->bind_param("s", $username);
-            $stmt->execute();
-            $result = $stmt->get_result()->fetch_assoc();
-            if ($result) {
-                $team_id = $result['team_id'];
+            if ($stmt) {
+                $stmt->bind_param("s", $username);
+                $stmt->execute();
+                $result = $stmt->get_result()->fetch_assoc();
+                if ($result) {
+                    $team_id = $result['team_id'];
+                }
+                $stmt->close();
             }
-            $stmt->close();
         }
 
         // Check if team has already paid for this tournament
@@ -76,22 +92,26 @@ class TournamentRegistrationController
         // Check if we're on payment step
         $show_payment = ($current_step === 'payment' && !empty($_SESSION['temp_registration_data']) && !$team_already_paid);
 
-        if ($tournament_id) {
+        if ($tournament_id && $conn) {
             // Get tournament data
             $stmt = $conn->prepare("SELECT id, name, description FROM tournaments WHERE id = ?");
-            $stmt->bind_param("i", $tournament_id);
-            $stmt->execute();
-            $tournament = $stmt->get_result()->fetch_assoc();
+            if ($stmt) {
+                $stmt->bind_param("i", $tournament_id);
+                $stmt->execute();
+                $tournament = $stmt->get_result()->fetch_assoc();
+                $stmt->close();
+            }
 
             // Get centers for the tournament zone
             if ($tournament) {
                 $zoneName = $tournament['name'];
-                // Original code assumed zone name matches tournament name or handled loosely.
-                // We keep original logic.
                 $stmt = $conn->prepare("SELECT id, name FROM centers WHERE zone = ?");
-                $stmt->bind_param("s", $zoneName);
-                $stmt->execute();
-                $centers = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+                if ($stmt) {
+                    $stmt->bind_param("s", $zoneName);
+                    $stmt->execute();
+                    $centers = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+                    $stmt->close();
+                }
             }
         }
 
@@ -120,16 +140,22 @@ class TournamentRegistrationController
         // So we need to pass this or let the view query it (Controller should do it).
 
         $teamNames = [];
-        $res = $conn->query("SELECT team_name FROM team_info");
-        while ($row = $res->fetch_assoc()) {
-            $teamNames[] = strtolower(trim($row['team_name']));
-        }
-
         $existingUsernames = [];
-        // JS block for username check also referenced existingUsernames, we should populate it.
-        $resU = $conn->query("SELECT username FROM team_account");
-        while($row = $resU->fetch_assoc()) {
-             $existingUsernames[] = strtolower(trim($row['username']));
+
+        if ($conn) {
+            $res = $conn->query("SELECT team_name FROM team_info");
+            if ($res) {
+                while ($row = $res->fetch_assoc()) {
+                    $teamNames[] = strtolower(trim($row['team_name']));
+                }
+            }
+
+            $resU = $conn->query("SELECT username FROM team_account");
+            if ($resU) {
+                while($row = $resU->fetch_assoc()) {
+                     $existingUsernames[] = strtolower(trim($row['username']));
+                }
+            }
         }
 
         view('tournament.register', compact(
@@ -157,23 +183,31 @@ class TournamentRegistrationController
                 throw new Exception("Team name, username, and password are required.");
             }
 
-            // Check if username already exists
-            $stmt = $conn->prepare("SELECT id FROM team_account WHERE username = ?");
-            $stmt->bind_param("s", $username);
-            $stmt->execute();
-            if ($stmt->get_result()->fetch_assoc()) {
-                throw new Exception("Username already exists. Please choose a different username.");
-            }
-            $stmt->close();
+            if ($conn) {
+                // Check if username already exists
+                $stmt = $conn->prepare("SELECT id FROM team_account WHERE username = ?");
+                if ($stmt) {
+                    $stmt->bind_param("s", $username);
+                    $stmt->execute();
+                    if ($stmt->get_result()->fetch_assoc()) {
+                        throw new Exception("Username already exists. Please choose a different username.");
+                    }
+                    $stmt->close();
+                }
 
-            // Check if team name already exists
-            $stmt = $conn->prepare("SELECT id FROM team_info WHERE team_name = ?");
-            $stmt->bind_param("s", $team_name);
-            $stmt->execute();
-            if ($stmt->get_result()->fetch_assoc()) {
-                throw new Exception("Team name already exists. Please choose a different team name.");
+                // Check if team name already exists
+                $stmt = $conn->prepare("SELECT id FROM team_info WHERE team_name = ?");
+                if ($stmt) {
+                    $stmt->bind_param("s", $team_name);
+                    $stmt->execute();
+                    if ($stmt->get_result()->fetch_assoc()) {
+                        throw new Exception("Team name already exists. Please choose a different team name.");
+                    }
+                    $stmt->close();
+                }
+            } else {
+                throw new Exception("Database connection unavailable.");
             }
-            $stmt->close();
 
             // Start transaction
             $conn->autocommit(FALSE);
@@ -209,9 +243,10 @@ class TournamentRegistrationController
             // Insert players
             if (isset($_POST['player_name']) && is_array($_POST['player_name'])) {
                 foreach ($_POST['player_name'] as $pname) {
-                    if (!empty(trim($pname))) {
+                    $trimmed_pname = trim($pname);
+                    if (!empty($trimmed_pname)) {
                         $role = 'player';
-                        $stmt->bind_param("iss", $new_team_id, trim($pname), $role);
+                        $stmt->bind_param("iss", $new_team_id, $trimmed_pname, $role);
                         $stmt->execute();
                     }
                 }

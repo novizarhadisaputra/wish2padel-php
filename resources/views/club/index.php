@@ -30,11 +30,13 @@
                 <div class="col-md-6 mb-2">
                     <select id="filterCity" class="form-select">
                         <option value="">-- Filter by City --</option>
-                        <?php while($city = $cities->fetch_assoc()): ?>
-                            <option value="<?= strtolower(htmlspecialchars($city['city'])) ?>">
-                                <?= htmlspecialchars($city['city']) ?>
-                            </option>
-                        <?php endwhile; ?>
+                        <?php if($cities): ?>
+                            <?php while($city = $cities->fetch_assoc()): ?>
+                                <option value="<?= strtolower(htmlspecialchars($city['city'])) ?>">
+                                    <?= htmlspecialchars($city['city']) ?>
+                                </option>
+                            <?php endwhile; ?>
+                        <?php endif; ?>
                     </select>
                 </div>
                 <div class="col-md-6 mb-2">
@@ -47,29 +49,43 @@
             </div>
         
             <div class="card shadow-lg border-0 p-3 mt-2" id="clubList">
-                <div id="clubItems" class="row g-3">
+                <div id="clubItems" class="row g-4">
                     <?php 
                     $allClubs = [];
-                    while ($club = $centers->fetch_assoc()) {
-                        $allClubs[] = $club;
+                    if ($centers) {
+                        while ($club = $centers->fetch_assoc()) {
+                            $allClubs[] = $club;
+                        }
                     }
                     foreach ($allClubs as $club): ?>
-                        <div class="col-12 col-sm-6 col-md-4 fade-in">
+                        <div class="col-12 col-sm-6 col-md-4 fade-in" 
+                             data-city="<?= htmlspecialchars($club['city'] ?? '') ?>" 
+                             data-name="<?= strtolower(htmlspecialchars($club['name'])) ?>">
+                            
                             <a href="<?= asset('club-detail?id=' . $club['id']) ?>" class="text-decoration-none text-dark">
-                                <div class="border rounded p-3 h-100 text-center club-item">
-                                    <div class="d-flex justify-content-center align-items-center bg-white rounded-3 mx-auto mb-3 shadow-sm" style="width:140px; height:140px; padding:10px;">
-                                        <img src="<?= asset('uploads/club/' . htmlspecialchars($club['logo_url'])) ?>"
-                                             alt="<?= htmlspecialchars($club['name']) ?>"
-                                             class="img-fluid"
+                                <div class="card shadow-lg border-0 position-relative h-100 club-item" 
+                                    style="border-radius: 15px; overflow: hidden; transition: transform 0.3s ease;">
+                                   
+                                    <div style="background-color:#303030; font-size: 0.75rem; z-index:10;" class="position-absolute top-0 end-0 m-3 text-white px-2 py-1 rounded shadow-sm">
+                                        <?= (int)$club['total_pistas'] ?> Field
+                                    </div>
+
+                                    <div class="d-flex justify-content-center align-items-center bg-white p-4" style="height: 180px;">
+                                        <img src="<?= asset('uploads/club/' . htmlspecialchars($club['logo_url'])) ?>" 
+                                             alt="<?= htmlspecialchars($club['name']) ?>" 
+                                             class="img-fluid" 
                                              style="max-height:100%; max-width:100%; object-fit:contain;">
                                     </div>
-                                    <h6 class="mb-1 text-truncate" title="<?= htmlspecialchars($club['name']) ?>"><?= htmlspecialchars($club['name']) ?></h6>
-                                    <p class="mb-0 text-muted" style="font-size:0.85rem;">
-                                        <?= htmlspecialchars($club['street']) ?> | <?= htmlspecialchars($club['postal_code']) ?> | <?= htmlspecialchars($club['city']) ?>
-                                    </p>
-                                    <p class="mb-0 text-muted" style="font-size:0.85rem;">
-                                        <?= htmlspecialchars($club['email']) ?> | <?= htmlspecialchars($club['phone']) ?>
-                                    </p>
+
+                                    <div class="card-body text-center p-3">
+                                        <h6 class="fw-bold mb-2 text-truncate" title="<?= htmlspecialchars($club['name']) ?>"><?= htmlspecialchars($club['name']) ?></h6>
+                                        <p class="text-muted mb-1 small text-truncate">
+                                            <?= htmlspecialchars($club['street']) ?> | <?= htmlspecialchars($club['city']) ?>
+                                        </p>
+                                        <p class="text-muted mb-0 small">
+                                            +<?= htmlspecialchars($club['phone']) ?>
+                                        </p>
+                                    </div>
                                 </div>
                             </a>
                         </div>
@@ -104,20 +120,29 @@
             
                         col.innerHTML = `
                             <a href="<?= asset('club-detail') ?>?id=${club.id}" class="text-decoration-none text-dark">
-                                <div class="border rounded p-3 h-100 text-center club-item">
-                                    <div class="d-flex justify-content-center align-items-center bg-white rounded-3 mx-auto mb-3 shadow-sm" style="width:140px; height:140px; padding:10px;">
-                                        <img src="<?= asset('uploads/club/') ?>${club.logo_url}"
-                                             alt="${club.name}"
-                                             class="img-fluid"
+                                <div class="card shadow-lg border-0 position-relative h-100 club-item" 
+                                    style="border-radius: 15px; overflow: hidden; transition: transform 0.3s ease;">
+                                   
+                                    <div style="background-color:#303030; font-size: 0.75rem; z-index:10;" class="position-absolute top-0 end-0 m-3 text-white px-2 py-1 rounded shadow-sm">
+                                        ${club.total_pistas} Field
+                                    </div>
+
+                                    <div class="d-flex justify-content-center align-items-center bg-white p-4" style="height: 180px;">
+                                        <img src="<?= asset('uploads/club/') ?>${club.logo_url}" 
+                                             alt="${club.name}" 
+                                             class="img-fluid" 
                                              style="max-height:100%; max-width:100%; object-fit:contain;">
                                     </div>
-                                    <h6 class="mb-1 text-truncate" title="${club.name}">${club.name}</h6>
-                                    <p class="mb-0 text-muted" style="font-size:0.85rem;">
-                                        ${club.street} | ${club.postal_code} | ${club.city}
-                                    </p>
-                                    <p class="mb-0 text-muted" style="font-size:0.85rem;">
-                                        ${club.email} | ${club.phone}
-                                    </p>
+
+                                    <div class="card-body text-center p-3">
+                                        <h6 class="fw-bold mb-2 text-truncate" title="${club.name}">${club.name}</h6>
+                                        <p class="text-muted mb-1 small text-truncate">
+                                            ${club.street} | ${club.city}
+                                        </p>
+                                        <p class="text-muted mb-0 small">
+                                            +${club.phone}
+                                        </p>
+                                    </div>
                                 </div>
                             </a>
                         `;
@@ -220,6 +245,10 @@
             window.addEventListener('scroll', toggleNavbarFixed);
             toggleNavbarFixed(); 
           });
+        </script>
+        <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+        <script>
+            AOS.init();
         </script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     </body>

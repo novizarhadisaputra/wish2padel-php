@@ -35,7 +35,8 @@
     </div>
 
     <div class="row g-4 flex-fill">
-        <?php while($m = $medias->fetch_assoc()): ?>
+        <?php if($medias): ?>
+            <?php while($m = $medias->fetch_assoc()): ?>
         <div class="col-12 col-sm-6 col-md-3">
             <a href="<?= asset('media/categories?media_id=' . $m['id']) ?>" class="text-decoration-none">
                 <div class="card border-0 shadow-sm rounded-4 gallery-card h-100">
@@ -53,6 +54,11 @@
             </a>
         </div>
         <?php endwhile; ?>
+        <?php else: ?>
+            <div class="col-12 text-center text-white">
+                <p>No gallery items found.</p>
+            </div>
+        <?php endif; ?>
     </div>
 </section>
 

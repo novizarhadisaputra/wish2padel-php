@@ -20,6 +20,7 @@
                 <div class="col-lg-10">
                     <div class="card shadow-lg border-0 rounded-4 p-4">
                     
+                        <?php if($news): ?>
                         <h2 class="fw-bold text-dark mb-3"><?= htmlspecialchars($news['title']) ?></h2>
                        
                         <small class="text-muted d-block mb-4">
@@ -33,6 +34,14 @@
                         <div id="deskrip" class="news-content text-muted fs-6">
                             <?= $news['description'] ?>
                         </div>
+                        <?php else: ?>
+                            <div class="alert alert-info py-4">
+                                <h4 class="alert-heading">News Not Found</h4>
+                                <p>This news article may have been removed or there is a temporary connection issue. Please try again later.</p>
+                                <hr>
+                                <a href="<?= asset('news') ?>" class="btn btn-outline-dark">Back to News</a>
+                            </div>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>

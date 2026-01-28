@@ -9,15 +9,19 @@ class ClubController
         $conn = getDBConnection();
         $username = $_SESSION['username'] ?? null;
         
-        $query = "
-        SELECT c.*, COALESCE(SUM(p.quantity),0) AS total_pistas
-        FROM centers c
-        LEFT JOIN pistas p ON c.id = p.center_id
-        GROUP BY c.id
-        ";
-        $centers = $conn->query($query);
-        
-        $cities = $conn->query("SELECT DISTINCT city FROM centers ORDER BY city ASC");
+        $centers = null;
+        $cities = null;
+
+        if ($conn) {
+            $query = "
+            SELECT c.*, COALESCE(SUM(p.quantity),0) AS total_pistas
+            FROM centers c
+            LEFT JOIN pistas p ON c.id = p.center_id
+            GROUP BY c.id
+            ";
+            $centers = $conn->query($query);
+            $cities = $conn->query("SELECT DISTINCT city FROM centers ORDER BY city ASC");
+        }
         
         view('club.index', compact('centers', 'cities'));
     }
@@ -33,14 +37,24 @@ class ClubController
             return;
         }
         
-        $stmt = $conn->prepare("SELECT * FROM centers WHERE id = ?");
-        $stmt->bind_param("i", $center_id);
-        $stmt->execute();
-        $center = $stmt->get_result()->fetch_assoc();
-        
-        $pistas = $conn->query("SELECT * FROM pistas WHERE center_id = $center_id");
-        $schedules = $conn->query("SELECT * FROM schedules WHERE center_id = $center_id");
-        $photos = $conn->query("SELECT * FROM photos WHERE center_id = $center_id");
+        $center = null;
+        $pistas = null;
+        $schedules = null;
+        $photos = null;
+
+        if ($conn && $center_id) {
+            $stmt = $conn->prepare("SELECT * FROM centers WHERE id = ?");
+            if ($stmt) {
+                $stmt->bind_param("i", $center_id);
+                $stmt->execute();
+                $center = $stmt->get_result()->fetch_assoc();
+                $stmt->close();
+            }
+            
+            $pistas = $conn->query("SELECT * FROM pistas WHERE center_id = " . intval($center_id));
+            $schedules = $conn->query("SELECT * FROM schedules WHERE center_id = " . intval($center_id));
+            $photos = $conn->query("SELECT * FROM photos WHERE center_id = " . intval($center_id));
+        }
         
         view('club.show', compact('center', 'pistas', 'schedules', 'photos'));
     }
@@ -56,6 +70,7 @@ class ClubController
             $email    = trim($_POST['email']);
             $phone    = trim($_POST['phone']);
             $password = $_POST['password'];
+            $city     = trim($_POST['city'] ?? '');
             $created_at = date('Y-m-d H:i:s');
         
             if (empty($name)) $errors[] = "Name is required.";
@@ -63,26 +78,34 @@ class ClubController
             if (empty($email)) $errors[] = "Email is required.";
             if (empty($phone)) $errors[] = "Phone is required.";
             if (empty($password)) $errors[] = "Password is required.";
+            if (empty($city)) $errors[] = "City is required.";
         
             if (empty($errors)) {
                 $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
         
-                $stmt = $conn->prepare("
-                    INSERT INTO centers
-                    (name, username, password, street, postal_code, city, zone, phone, email, website, description, logo_url, created_at, updated_at)
-                    VALUES (?, ?, ?, NULL, NULL, NULL, NULL, ?, ?, NULL, NULL, NULL, ?, NULL)
-                ");
+                if ($conn) {
+                    $stmt = $conn->prepare("
+                        INSERT INTO centers
+                        (name, username, password, street, postal_code, city, zone, phone, email, website, description, logo_url, created_at, updated_at)
+                        VALUES (?, ?, ?, NULL, NULL, ?, NULL, ?, ?, NULL, NULL, NULL, ?, NULL)
+                    ");
+                    
+                    if ($stmt) {
+                        $stmt->bind_param("sssssss", $name, $username, $hashedPassword, $city, $phone, $email, $created_at);
                 
-                $stmt->bind_param("ssssss", $name, $username, $hashedPassword, $phone, $email, $created_at);
-        
-                if ($stmt->execute()) {
-                    // Redirect to login (assuming we have a route or using legacy for now if not migrated)
-                    // The legacy code redirected to login/login.php. 
-                    // We should verify if we have a login route. Yes, /login.
-                    header("Location: " . asset('login'));
-                    exit;
+                        if ($stmt->execute()) {
+                            $stmt->close();
+                            header("Location: " . asset('login'));
+                            exit;
+                        } else {
+                            $errors[] = "Database error: " . $conn->error;
+                            $stmt->close();
+                        }
+                    } else {
+                        $errors[] = "Failed to prepare database statement.";
+                    }
                 } else {
-                    $errors[] = "Database error: " . $conn->error;
+                    $errors[] = "Database connection unavailable.";
                 }
             }
         }

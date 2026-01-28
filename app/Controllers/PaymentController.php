@@ -23,26 +23,35 @@ class PaymentController
             $error = "Missing required parameters.";
         } else {
             try {
+                if (!$conn) throw new Exception("Database connection unavailable.");
+                
                 $paymentSystem = new SimplePaymentSystem();
                 $stmt = $conn->prepare("SELECT team_name, captain_name, captain_email, captain_phone FROM team_info WHERE id = ? AND tournament_id = ?");
-                $stmt->bind_param("ii", $team_id, $tournament_id);
-                $stmt->execute();
-                $team = $stmt->get_result()->fetch_assoc();
-                $stmt->close();
+                if ($stmt) {
+                    $stmt->bind_param("ii", $team_id, $tournament_id);
+                    $stmt->execute();
+                    $team = $stmt->get_result()->fetch_assoc();
+                    $stmt->close();
+                }
 
                 if (!$team) throw new Exception("Team not found for this tournament.");
 
                 $stmt = $conn->prepare("SELECT username FROM team_account WHERE team_id = ?");
-                $stmt->bind_param("i", $team_id);
-                $stmt->execute();
-                $has_account = !empty($stmt->get_result()->fetch_assoc());
-                $stmt->close();
+                $has_account = false;
+                if ($stmt) {
+                    $stmt->bind_param("i", $team_id);
+                    $stmt->execute();
+                    $has_account = !empty($stmt->get_result()->fetch_assoc());
+                    $stmt->close();
+                }
 
                 $stmt = $conn->prepare("SELECT * FROM tournaments WHERE id = ?");
-                $stmt->bind_param("i", $tournament_id);
-                $stmt->execute();
-                $tournament = $stmt->get_result()->fetch_assoc();
-                $stmt->close();
+                if ($stmt) {
+                    $stmt->bind_param("i", $tournament_id);
+                    $stmt->execute();
+                    $tournament = $stmt->get_result()->fetch_assoc();
+                    $stmt->close();
+                }
 
                 if (!$tournament) throw new Exception("Tournament not found");
 
@@ -84,7 +93,7 @@ class PaymentController
                     }
                 }
             } catch (Exception $e) {
-                $error = "Database error: " . $e->getMessage();
+                $error = "Payment error: " . $e->getMessage();
             }
         }
         $amount = function_exists('getDynamicPaymentAmount') ? getDynamicPaymentAmount() : 0;
@@ -106,11 +115,15 @@ class PaymentController
             $error = "Missing parameters.";
         } else {
             try {
+                if (!$conn) throw new Exception("Database connection unavailable.");
+                
                 $stmt = $conn->prepare("SELECT id FROM team_info WHERE id = ? AND tournament_id = ?");
-                $stmt->bind_param("ii", $team_id, $tournament_id);
-                $stmt->execute();
-                if (!$stmt->get_result()->fetch_assoc()) throw new Exception("Team not found.");
-                $stmt->close();
+                if ($stmt) {
+                    $stmt->bind_param("ii", $team_id, $tournament_id);
+                    $stmt->execute();
+                    if (!$stmt->get_result()->fetch_assoc()) throw new Exception("Team not found.");
+                    $stmt->close();
+                }
 
                 if ($paymentSystem->isTeamPaid($team_id, $tournament_id)) {
                     $success = "Team already paid.";
@@ -216,8 +229,11 @@ class PaymentController
     }
 
     private function updateTeamPaymentRecord($conn, $team_id, $tournament_id, $payment_id, $payment_details = null) {
+        if (!$conn) return false;
         try {
             $stmt = $conn->prepare("SELECT id FROM payment_transactions WHERE team_id = ? AND tournament_id = ? AND payment_id = ?");
+            if (!$stmt) return false;
+            
             $stmt->bind_param("iis", $team_id, $tournament_id, $payment_id);
             $stmt->execute();
             $existing = $stmt->get_result()->fetch_assoc();
@@ -227,6 +243,7 @@ class PaymentController
 
             if ($existing) {
                 $stmt = $conn->prepare("UPDATE payment_transactions SET status='paid', payment_data=?, updated_at=NOW() WHERE team_id=? AND tournament_id=? AND payment_id=?");
+                if (!$stmt) return false;
                 $stmt->bind_param("siis", $json, $team_id, $tournament_id, $payment_id);
             } else {
                 $amount = ($payment_details['amount'] ?? 0) / 100;
@@ -234,6 +251,7 @@ class PaymentController
                 if ($amount == 0 && defined('MOYASAR_AMOUNT')) $amount = MOYASAR_AMOUNT / 100;
                 $method = $this->getPaymentMethod($payment_details);
                 $stmt = $conn->prepare("INSERT INTO payment_transactions (team_id, tournament_id, payment_id, amount, currency, status, payment_method, payment_data, created_at, updated_at) VALUES (?, ?, ?, ?, ?, 'paid', ?, ?, NOW(), NOW())");
+                if (!$stmt) return false;
                 $stmt->bind_param("iisdsss", $team_id, $tournament_id, $payment_id, $amount, $currency, $method, $json);
             }
             $res = $stmt->execute();

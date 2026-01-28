@@ -64,7 +64,7 @@
 
 
     <!-- 🤝 COLLABORATORS -->
-    <?php if ($resultCollaborators->num_rows > 0): ?>
+    <?php if ($resultCollaborators && $resultCollaborators->num_rows > 0): ?>
     <div class="sponsor-category collab mb-5">
       <h3 class="category-title text-gradient-silver mb-4">Collaborators</h3>
       <div class="sponsor-grid">

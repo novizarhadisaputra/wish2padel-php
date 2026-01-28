@@ -752,7 +752,7 @@ class SimplePaymentSystem
     /**
      * Make HTTP request to Moyasar API
      */
-    private function callMoyasarAPI(string $method, string $path, array $data = null): array
+    private function callMoyasarAPI(string $method, string $path, ?array $data = null): array
     {
         $url = ($_ENV['MOYASAR_API_URL'] ?? 'https://api.moyasar.com/v1') . $path;
         $ch = curl_init($url);

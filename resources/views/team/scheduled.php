@@ -45,7 +45,7 @@
                 Schedule & Results
             </h4>
 
-            <?php if ($matches_res->num_rows === 0): ?>
+            <?php if (!$matches_res || $matches_res->num_rows === 0): ?>
                 <div class="alert alert-info text-center py-3">
                     No matches available for your team.
                 </div>
@@ -53,7 +53,7 @@
 
             <?php 
             $highlightSet = false;
-            while ($m = $matches_res->fetch_assoc()):
+            while ($matches_res && $m = $matches_res->fetch_assoc()):
                 $dateStr = date("l, d M Y, H:i", strtotime($m['scheduled_date']));
                 $logo1 = !empty($m['team1_logo']) ? "uploads/logo/".$m['team1_logo'] : "uploads/logo/default.png";
                 $logo2 = !empty($m['team2_logo']) ? "uploads/logo/".$m['team2_logo'] : "uploads/logo/default.png";
@@ -63,21 +63,23 @@
                 $logo2 = asset($logo2);
 
                 $team1Badge = $team2Badge = "";
-                if ($m['status'] === 'completed') {
+                if ($m['status'] === 'completed' && $conn) {
                     // Ambil hasil dari kedua tim
-                    $team1Res = $conn->query("
+                    $team1ResQuery = $conn->query("
                         SELECT pairs_won, pairs_lost 
                         FROM match_results 
                         WHERE match_id = {$m['id']} AND team_id = {$m['team1_id']}
                         LIMIT 1
-                    ")->fetch_assoc();
+                    ");
+                    $team1Res = $team1ResQuery ? $team1ResQuery->fetch_assoc() : null;
 
-                    $team2Res = $conn->query("
+                    $team2ResQuery = $conn->query("
                         SELECT pairs_won, pairs_lost 
                         FROM match_results 
                         WHERE match_id = {$m['id']} AND team_id = {$m['team2_id']}
                         LIMIT 1
-                    ")->fetch_assoc();
+                    ");
+                    $team2Res = $team2ResQuery ? $team2ResQuery->fetch_assoc() : null;
 
                     if ($team1Res && $team2Res) {
                         $scoreText = "{$team1Res['pairs_won']} - {$team2Res['pairs_won']}";
@@ -105,8 +107,15 @@
                     default     => 'bg-secondary'
                 };
 
-                $lineup = $conn->query("SELECT letter FROM lineup_letters WHERE match_id = {$m['id']} AND team_id = $team_id ORDER BY uploaded_at DESC LIMIT 1")->fetch_assoc()['letter'] ?? null;
-                $result = $conn->query("SELECT letter FROM match_results WHERE match_id = {$m['id']} AND team_id = $team_id ORDER BY updated_at DESC LIMIT 1")->fetch_assoc()['letter'] ?? null;
+                $lineup = null;
+                $result = null;
+                if ($conn) {
+                    $lineupQuery = $conn->query("SELECT letter FROM lineup_letters WHERE match_id = {$m['id']} AND team_id = $team_id ORDER BY uploaded_at DESC LIMIT 1");
+                    $lineup = $lineupQuery ? $lineupQuery->fetch_assoc()['letter'] ?? null : null;
+                    
+                    $resultQuery = $conn->query("SELECT letter FROM match_results WHERE match_id = {$m['id']} AND team_id = $team_id ORDER BY updated_at DESC LIMIT 1");
+                    $result = $resultQuery ? $resultQuery->fetch_assoc()['letter'] ?? null : null;
+                }
 
                 $isNext = (!$highlightSet && $m['status'] != 'completed');
                 if ($isNext) $highlightSet = true;

@@ -102,7 +102,7 @@ body {
 <section class="card-info">
     <h2 class="section-title">Match History</h2>
 
-    <?php if ($resSchedule->num_rows === 0): ?>
+    <?php if (!$resSchedule || $resSchedule->num_rows === 0): ?>
         <p class="text-muted">No matches available for this team.</p>
     <?php else: ?>
         <?php while ($m = $resSchedule->fetch_assoc()):
@@ -118,9 +118,12 @@ body {
             $team1Badge = $team2Badge = "";
 
             // Jika completed, ambil hasil dari match_results
-            if ($m['status'] === "completed") {
-                $res1 = $conn->query("SELECT pairs_won FROM match_results WHERE match_id = {$m['id']} AND team_id = {$m['team1_id']} LIMIT 1")->fetch_assoc();
-                $res2 = $conn->query("SELECT pairs_won FROM match_results WHERE match_id = {$m['id']} AND team_id = {$m['team2_id']} LIMIT 1")->fetch_assoc();
+            if ($m['status'] === "completed" && $conn) {
+                $res1Query = $conn->query("SELECT pairs_won FROM match_results WHERE match_id = {$m['id']} AND team_id = {$m['team1_id']} LIMIT 1");
+                $res1 = $res1Query ? $res1Query->fetch_assoc() : null;
+                
+                $res2Query = $conn->query("SELECT pairs_won FROM match_results WHERE match_id = {$m['id']} AND team_id = {$m['team2_id']} LIMIT 1");
+                $res2 = $res2Query ? $res2Query->fetch_assoc() : null;
                 
                 if ($res1 && $res2) {
                     $scoreText = "{$res1['pairs_won']} - {$res2['pairs_won']}";

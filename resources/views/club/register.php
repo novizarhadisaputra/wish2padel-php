@@ -70,6 +70,11 @@
                     </div>
     
                     <div class="mb-3">
+                        <label for="city" class="form-label">City</label>
+                        <input type="text" name="city" id="city" class="form-control" value="<?= htmlspecialchars($_POST['city'] ?? '') ?>" placeholder="e.g. Riyadh" required>
+                    </div>
+    
+                    <div class="mb-3">
                         <label for="password" class="form-label">Password</label>
                         <input type="password" name="password" id="password" class="form-control" required>
                     </div>

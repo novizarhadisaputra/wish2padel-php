@@ -31,6 +31,10 @@ class AuthController
     {
         // Login logic migrated from login_process.php
         $conn = $this->db;
+        if (!$conn) {
+            $_SESSION['error_message'] = "Database connection unavailable.";
+            redirect('/login');
+        }
 
         $identifier = trim($_POST['login_identifier'] ?? '');
         $password   = $_POST['login_password'] ?? '';
@@ -44,41 +48,51 @@ class AuthController
 
         // 1. Check Users (Admin)
         $stmt = $conn->prepare("SELECT id, username, email, password_hash, role FROM users WHERE username = ? OR email = ? LIMIT 1");
-        $stmt->bind_param("ss", $identifier, $identifier);
-        $stmt->execute();
-        $res = $stmt->get_result();
-        
-        if ($row = $res->fetch_assoc()) {
-            if (password_verify($password, $row['password_hash'])) {
-                session_regenerate_id(true);
-                $_SESSION['user_id'] = $row['id'];
-                $_SESSION['username'] = $row['username'];
-                $_SESSION['role'] = $row['role'];
-                
-                redirect($row['role'] === 'admin' ? '/admin/dashboard' : '/');
-                return;
-            } else {
-                $_SESSION['error_message'] = "Incorrect password.";
+        if ($stmt) {
+            $stmt->bind_param("ss", $identifier, $identifier);
+            $stmt->execute();
+            $res = $stmt->get_result();
+            
+            if ($row = $res->fetch_assoc()) {
+                if (password_verify($password, $row['password_hash'])) {
+                    session_regenerate_id(true);
+                    $_SESSION['user_id'] = $row['id'];
+                    $_SESSION['username'] = $row['username'];
+                    $_SESSION['role'] = $row['role'];
+                    $stmt->close();
+                    redirect($row['role'] === 'admin' ? '/admin/dashboard' : '/');
+                    return;
+                } else {
+                    $_SESSION['error_message'] = "Incorrect password.";
+                }
             }
+            $stmt->close();
         }
-        $stmt->close();
 
         // 2. Check Team Account (Simplified for now - full logic needs porting)
          $stmt = $conn->prepare("SELECT team_id, username, password_hash FROM team_account WHERE username = ? LIMIT 1");
-         $stmt->bind_param("s", $identifier);
-         $stmt->execute();
-         $res = $stmt->get_result();
-         if ($row = $res->fetch_assoc()) {
-             if (password_verify($password, $row['password_hash'])) {
-                 session_regenerate_id(true);
-                 $_SESSION['team_id'] = $row['team_id'];
-                 $_SESSION['username'] = $row['username'];
-                 redirect('/dashboard'); // Assuming dashboard route
-                 return;
+         if ($stmt) {
+             $stmt->bind_param("s", $identifier);
+             $stmt->execute();
+             $res = $stmt->get_result();
+             if ($row = $res->fetch_assoc()) {
+                 if (password_verify($password, $row['password_hash'])) {
+                     session_regenerate_id(true);
+                     $_SESSION['team_id'] = $row['team_id'];
+                     $_SESSION['username'] = $row['username'];
+                     $stmt->close();
+                     redirect('/dashboard'); // Assuming dashboard route
+                     return;
+                 } else {
+                     $_SESSION['error_message'] = "Incorrect password.";
+                 }
              }
+             $stmt->close();
          }
         
-        $_SESSION['error_message'] = "Login failed or User not found.";
+        if (!isset($_SESSION['error_message'])) {
+            $_SESSION['error_message'] = "Login failed or User not found.";
+        }
         redirect('/login');
     }
 }

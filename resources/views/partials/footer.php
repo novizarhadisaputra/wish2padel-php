@@ -1,27 +1,26 @@
 <?php
 // Ambil semua data sponsor dari database
 if (!isset($conn)) $conn = getDBConnection();
-$result = $conn->query("SELECT * FROM sponsors ORDER BY sponsor_id DESC");
+$result = $conn ? $conn->query("SELECT * FROM sponsors ORDER BY sponsor_id DESC") : null;
 
 $premiumSponsors = [];
 $standardSponsors = [];
 $collaborates = [];
 
-while ($row = $result->fetch_assoc()) {
-
-    // Sponsor (bukan collaborate)
-    if ($row['status'] === 'sponsor') {
-
-        // Bedakan berdasarkan type
-        if (isset($row['type']) && $row['type'] === 'premium') {
-            $premiumSponsors[] = $row;
-        } else {
-            $standardSponsors[] = $row;
+if ($result) {
+    while ($row = $result->fetch_assoc()) {
+        // Sponsor (bukan collaborate)
+        if ($row['status'] === 'sponsor') {
+            // Bedakan berdasarkan type
+            if (isset($row['type']) && $row['type'] === 'premium') {
+                $premiumSponsors[] = $row;
+            } else {
+                $standardSponsors[] = $row;
+            }
+        // Collaborate
+        } elseif ($row['status'] === 'collaborate') {
+            $collaborates[] = $row;
         }
-
-    // Collaborate
-    } elseif ($row['status'] === 'collaborate') {
-        $collaborates[] = $row;
     }
 }
 

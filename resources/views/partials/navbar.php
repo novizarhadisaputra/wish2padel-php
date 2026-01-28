@@ -128,18 +128,23 @@
 $now = date('Y-m-d H:i:s');
 $showAddMember = false;
 
-$stmt = $conn->prepare("
-    SELECT * FROM transfer_windows 
-    WHERE start_date <= ? AND end_date >= ?
-    ORDER BY start_date DESC
-");
-$stmt->bind_param("ss", $now, $now);
-$stmt->execute();
-$result = $stmt->get_result();
+if ($conn) {
+    $stmt = $conn->prepare("
+        SELECT * FROM transfer_windows 
+        WHERE start_date <= ? AND end_date >= ?
+        ORDER BY start_date DESC
+    ");
+    if ($stmt) {
+        $stmt->bind_param("ss", $now, $now);
+        $stmt->execute();
+        $result = $stmt->get_result();
 
-if ($result->num_rows > 0) {
-    $activeWindow = $result->fetch_assoc();
-    $showAddMember = true;
+        if ($result && $result->num_rows > 0) {
+            $activeWindow = $result->fetch_assoc();
+            $showAddMember = true;
+        }
+        $stmt->close();
+    }
 }
 ?>
 
@@ -183,7 +188,7 @@ if ($result->num_rows > 0) {
         <?php endif; ?>
 
         <li class="nav-item">
-          <a class="nav-link" href="<?= asset('regis') ?>">Register Team</a>
+          <a class="btn btn-gold" href="<?= asset('regis') ?>">Register Team</a>
         </li>
 
         <li class="nav-item">

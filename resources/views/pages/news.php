@@ -21,7 +21,8 @@
             </div>
         
             <div class="row g-4">
-                <?php while($row = $result->fetch_assoc()): ?>
+                <?php if($result): ?>
+                    <?php while($row = $result->fetch_assoc()): ?>
                     <div class="col-md-6 col-lg-3">
                         <a href="<?= asset('news-detail?id=' . $row['id']) ?>" class="text-decoration-none text-dark">
                             <div class="card h-100 shadow-sm border-0 rounded-3 news-card custom-card">
@@ -52,6 +53,11 @@
                         </a>
                     </div>
                 <?php endwhile; ?>
+                <?php else: ?>
+                    <div class="col-12 text-center text-white">
+                        <p>No news available at the moment.</p>
+                    </div>
+                <?php endif; ?>
             </div>
         </section>
         

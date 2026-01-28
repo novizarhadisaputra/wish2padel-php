@@ -59,21 +59,15 @@ if (!function_exists('getDBConnection')) {
         try {
             $conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
             if ($conn->connect_error) {
-                error_log("Connection failed: " . $conn->connect_error);
-                // Return mock only on absolute failure if needed, or throw
-                throw new Exception("Database connection failed");
+                error_log("Database Connection failed: " . $conn->connect_error);
+                $conn = null;
+                return null;
             }
             $conn->set_charset("utf8mb4");
         } catch (\Throwable $e) {
-            error_log($e->getMessage());
-            // Last resort fallback to avoid complete crash during refactor
-            return new class {
-                public $error = 'Database Connection Failed';
-                public $insert_id = 0;
-                public function query($sql) { return false; }
-                public function prepare($sql) { return false; }
-                public function close() {}
-            };
+            error_log("Database Exception: " . $e->getMessage());
+            $conn = null;
+            return null;
         }
 
         return $conn;

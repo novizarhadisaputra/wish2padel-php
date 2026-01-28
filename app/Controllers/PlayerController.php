@@ -9,7 +9,11 @@ class PlayerController
         $conn = getDBConnection();
         date_default_timezone_set('Asia/Riyadh');
 
-        $centers = $conn->query("SELECT id, name FROM centers ORDER BY name ASC")->fetch_all(MYSQLI_ASSOC);
+        $centers = [];
+        if ($conn) {
+            $centers_res = $conn->query("SELECT id, name FROM centers ORDER BY name ASC");
+            $centers = $centers_res ? $centers_res->fetch_all(MYSQLI_ASSOC) : [];
+        }
         $success_msg = '';
         $errors = [];
 
@@ -31,18 +35,26 @@ class PlayerController
             if (empty($errors)) {
                 $created_at = date('Y-m-d H:i:s');
 
-                $stmt = $conn->prepare("
-                    INSERT INTO individuals (full_name, phone, email, gender, address, center_id, created_at)
-                    VALUES (?, ?, ?, ?, ?, ?, ?)
-                ");
-                $stmt->bind_param("sssssis", $full_name, $phone, $email, $gender, $address, $center_id, $created_at);
+                if ($conn) {
+                    $stmt = $conn->prepare("
+                        INSERT INTO individuals (full_name, phone, email, gender, address, center_id, created_at)
+                        VALUES (?, ?, ?, ?, ?, ?, ?)
+                    ");
+                    if ($stmt) {
+                        $stmt->bind_param("sssssis", $full_name, $phone, $email, $gender, $address, $center_id, $created_at);
 
-                if ($stmt->execute()) {
-                    $success_msg = 'Your registration was successful. The club will contact you if they form a team.';
-                    // Clear POST data to avoid repopulating form
-                    $_POST = [];
+                        if ($stmt->execute()) {
+                            $success_msg = 'Your registration was successful. The club will contact you if they form a team.';
+                            $_POST = [];
+                        } else {
+                            $errors[] = 'Database error: ' . $conn->error;
+                        }
+                        $stmt->close();
+                    } else {
+                        $errors[] = 'Failed to prepare database statement.';
+                    }
                 } else {
-                    $errors[] = 'Database error: ' . $conn->error;
+                    $errors[] = 'Database connection unavailable.';
                 }
             }
         }

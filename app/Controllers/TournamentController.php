@@ -18,103 +18,124 @@ class TournamentController
             return;
         }
         
-        // 1. Get Tournament Info
-        $stmt = $conn->prepare("SELECT name FROM tournaments WHERE id = ?");
-        $stmt->bind_param("i", $tournament_id);
-        $stmt->execute();
-        $tournament = $stmt->get_result()->fetch_assoc();
-        
-        // 2. Get Divisions
-        $divisions_res = $conn->query("SELECT id, division_name FROM divisions ORDER BY id ASC");
+        // Initialize defaults
+        $tournament = null;
         $divisions = [];
-        while($row = $divisions_res->fetch_assoc()) {
-            $divisions[] = $row;
-        }
-        
-        // 3. Auto-select division if needed
-        if ($selected_division === null) {
-            // Original code had a loop checking for matches in divisions but eventually just picked the first one 
-            // if logic wasn't fully guarding it. 
-            // Simplified from original:
-            if (!empty($divisions)) {
-                $selected_division = $divisions[0]['id'];
-            }
-        }
-        
-        // 4. Fetch Schedule / Matches (Journeys)
-        $sql = "
-            SELECT m.id, m.scheduled_date, m.status, m.journey,
-                t1.id AS team1_id, t1.team_name AS team1, t1.logo AS team1_logo, c1.division AS team1_division, t1.level AS team1_level,
-                t2.id AS team2_id, t2.team_name AS team2, t2.logo AS team2_logo, c2.division AS team2_division, t2.level AS team2_level,
-                mr1.pairs_won AS score1,
-                mr2.pairs_won AS score2
-            FROM matches m
-            JOIN team_info t1 ON m.team1_id = t1.id
-            JOIN team_info t2 ON m.team2_id = t2.id
-            JOIN team_contact_details c1 ON c1.team_id = t1.id
-            JOIN team_contact_details c2 ON c2.team_id = t2.id
-            LEFT JOIN match_results mr1 ON mr1.match_id = m.id AND mr1.team_id = t1.id AND mr1.status='accept'
-            LEFT JOIN match_results mr2 ON mr2.match_id = m.id AND mr2.team_id = t2.id AND mr2.status='accept'
-            WHERE m.tournament_id = ?
-        ";
-        
-        if ($selected_division !== null && $selected_division !== 0) {
-            $sql .= " AND (c1.division = ? AND c2.division = ?)";
-        }
-        
-        $sql .= " ORDER BY m.journey ASC, m.scheduled_date ASC";
-        
-        $stmt = $conn->prepare($sql);
-        
-        if ($selected_division !== null && $selected_division !== 0) {
-            $stmt->bind_param("iii", $tournament_id, $selected_division, $selected_division);
-        } else {
-            $stmt->bind_param("i", $tournament_id);
-        }
-        
-        $stmt->execute();
-        $res = $stmt->get_result();
-        
         $journeys = [];
-        while($row = $res->fetch_assoc()) {
-            $journeys[$row['journey']][] = $row;
-        }
-        $total_journey = count($journeys);
+        $leaderboard = [];
+        $championTeamName = 'TBD';
+        $championLogo = asset('uploads/logo/default.png');
+        $allJourneysDone = false;
 
-        // 5. Build Leaderboard
-        $leaderboard = $this->buildLeaderboard($conn, $tournament_id, $selected_division);
-
-        // 6. Check for Champion Logic
-        $championTeamId   = $leaderboard[0]['team_id']   ?? null;
-        $championTeamName = $leaderboard[0]['team_name'] ?? 'TBD';
-        
-        $championLogo = "../uploads/logo/default.png";
-        if ($championTeamId) {
-            $stmtLogo = $conn->prepare("SELECT logo FROM team_info WHERE id = ? LIMIT 1");
-            $stmtLogo->bind_param("i", $championTeamId);
-            $stmtLogo->execute();
-            $logoRow = $stmtLogo->get_result()->fetch_assoc();
-            if(!empty($logoRow['logo'])) {
-                $championLogo = "../uploads/logo/".$logoRow['logo'];
+        if ($conn) {
+            // 1. Get Tournament Info
+            $stmt = $conn->prepare("SELECT name FROM tournaments WHERE id = ?");
+            if ($stmt) {
+                $stmt->bind_param("i", $tournament_id);
+                $stmt->execute();
+                $tournament = $stmt->get_result()->fetch_assoc();
             }
-        }
+            
+            // 2. Get Divisions
+            $divisions_res = $conn->query("SELECT id, division_name FROM divisions ORDER BY id ASC");
+            if ($divisions_res) {
+                while($row = $divisions_res->fetch_assoc()) {
+                    $divisions[] = $row;
+                }
+            }
+            
+            // 3. Auto-select division if needed
+            if ($selected_division === null) {
+                if (!empty($divisions)) {
+                    $selected_division = $divisions[0]['id'];
+                }
+            }
+            
+            // 4. Fetch Schedule / Matches (Journeys)
+            $sql = "
+                SELECT m.id, m.scheduled_date, m.status, m.journey,
+                    t1.id AS team1_id, t1.team_name AS team1, t1.logo AS team1_logo, c1.division AS team1_division, t1.level AS team1_level,
+                    t2.id AS team2_id, t2.team_name AS team2, t2.logo AS team2_logo, c2.division AS team2_division, t2.level AS team2_level,
+                    mr1.pairs_won AS score1,
+                    mr2.pairs_won AS score2
+                FROM matches m
+                JOIN team_info t1 ON m.team1_id = t1.id
+                JOIN team_info t2 ON m.team2_id = t2.id
+                JOIN team_contact_details c1 ON c1.team_id = t1.id
+                JOIN team_contact_details c2 ON c2.team_id = t2.id
+                LEFT JOIN match_results mr1 ON mr1.match_id = m.id AND mr1.team_id = t1.id AND mr1.status='accept'
+                LEFT JOIN match_results mr2 ON mr2.match_id = m.id AND mr2.team_id = t2.id AND mr2.status='accept'
+                WHERE m.tournament_id = ?
+            ";
+            
+            if ($selected_division !== null && $selected_division !== 0) {
+                $sql .= " AND (c1.division = ? AND c2.division = ?)";
+            }
+            
+            $sql .= " ORDER BY m.journey ASC, m.scheduled_date ASC";
+            
+            $stmt = $conn->prepare($sql);
+            if ($stmt) {
+                if ($selected_division !== null && $selected_division !== 0) {
+                    $stmt->bind_param("iii", $tournament_id, $selected_division, $selected_division);
+                } else {
+                    $stmt->bind_param("i", $tournament_id);
+                }
+                
+                $stmt->execute();
+                $res = $stmt->get_result();
+                
+                if ($res) {
+                    while($row = $res->fetch_assoc()) {
+                        $journeys[$row['journey']][] = $row;
+                    }
+                }
+            }
+            $total_journey = count($journeys);
 
-        // 7. Check if all journeys done (for champion display)
-        $journeyCheck = $conn->prepare("
-            SELECT COUNT(*) AS not_done
-            FROM matches m
-            JOIN team_contact_details t1 ON t1.team_id = m.team1_id
-            JOIN team_contact_details t2 ON t2.team_id = m.team2_id
-            WHERE m.tournament_id = ?
-              AND t1.division = ?
-              AND t2.division = ?
-              AND (m.notes IS NULL OR TRIM(m.notes) = '')
-              AND (m.status IS NULL OR LOWER(m.status) <> 'completed')
-        ");
-        $journeyCheck->bind_param("iii", $tournament_id, $selected_division, $selected_division);
-        $journeyCheck->execute();
-        $notDone = $journeyCheck->get_result()->fetch_assoc()['not_done'] ?? 0;
-        $allJourneysDone = ($notDone == 0);
+            // 5. Build Leaderboard
+            $leaderboard = $this->buildLeaderboard($conn, $tournament_id, $selected_division);
+
+            // 6. Check for Champion Logic
+            $championTeamId   = $leaderboard[0]['team_id']   ?? null;
+            $championTeamName = $leaderboard[0]['team_name'] ?? 'TBD';
+            
+            $championLogo = asset('uploads/logo/default.png');
+            if ($championTeamId) {
+                $stmtLogo = $conn->prepare("SELECT logo FROM team_info WHERE id = ? LIMIT 1");
+                if ($stmtLogo) {
+                    $stmtLogo->bind_param("i", $championTeamId);
+                    $stmtLogo->execute();
+                    $logoResult = $stmtLogo->get_result();
+                    $logoRow = $logoResult ? $logoResult->fetch_assoc() : null;
+                    if($logoRow && !empty($logoRow['logo'])) {
+                        $championLogo = asset("uploads/logo/".$logoRow['logo']);
+                    }
+                }
+            }
+
+            // 7. Check if all journeys done (for champion display)
+            $journeyCheck = $conn->prepare("
+                SELECT COUNT(*) AS not_done
+                FROM matches m
+                JOIN team_contact_details t1 ON t1.team_id = m.team1_id
+                JOIN team_contact_details t2 ON t2.team_id = m.team2_id
+                WHERE m.tournament_id = ?
+                  AND t1.division = ?
+                  AND t2.division = ?
+                  AND (m.notes IS NULL OR TRIM(m.notes) = '')
+                  AND (m.status IS NULL OR LOWER(m.status) <> 'completed')
+            ");
+            if ($journeyCheck) {
+                $journeyCheck->bind_param("iii", $tournament_id, $selected_division, $selected_division);
+                $journeyCheck->execute();
+                $jcResult = $journeyCheck->get_result();
+                $notDone = $jcResult ? ($jcResult->fetch_assoc()['not_done'] ?? 0) : 0;
+                $allJourneysDone = ($notDone == 0);
+            }
+        } else {
+            $total_journey = 0;
+        }
 
         view('tournament.show', compact(
             'tournament', 'tournament_id', 'divisions', 'selected_division',
@@ -157,6 +178,7 @@ class TournamentController
         $resTeams = $stmtTeams->get_result();
     
         $leaderboard = [];
+        if (!$conn) return $leaderboard;
     
         // Kueri bantu
         $sqlMatches = "

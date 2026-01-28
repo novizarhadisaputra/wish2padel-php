@@ -8,8 +8,10 @@ class MediaController
     {
         $conn = getDBConnection();
         
-        // Fetch media for user view
-        $medias = $conn->query("SELECT * FROM media ORDER BY created_at DESC");
+        $medias = null;
+        if ($conn) {
+            $medias = $conn->query("SELECT * FROM media ORDER BY created_at DESC");
+        }
         
         view('media.gallery', compact('medias'));
     }
@@ -24,18 +26,26 @@ class MediaController
              exit;
         }
 
-        // Fetch categories for this media
-        // Legacy: SELECT * FROM category WHERE media_id=?
-        $stmt = $conn->prepare("SELECT * FROM category WHERE media_id = ? ORDER BY created_at DESC");
-        $stmt->bind_param("i", $media_id);
-        $stmt->execute();
-        $categories = $stmt->get_result();
-        
-        // Also fetch media name for breadcrumb/title if needed
-        $stmt2 = $conn->prepare("SELECT name FROM media WHERE id = ?");
-        $stmt2->bind_param("i", $media_id);
-        $stmt2->execute();
-        $media = $stmt2->get_result()->fetch_assoc();
+        $categories = null;
+        $media = null;
+
+        if ($conn && $media_id) {
+            $stmt = $conn->prepare("SELECT * FROM category WHERE media_id = ? ORDER BY created_at DESC");
+            if ($stmt) {
+                $stmt->bind_param("i", $media_id);
+                $stmt->execute();
+                $categories = $stmt->get_result();
+                $stmt->close();
+            }
+            
+            $stmt2 = $conn->prepare("SELECT name FROM media WHERE id = ?");
+            if ($stmt2) {
+                $stmt2->bind_param("i", $media_id);
+                $stmt2->execute();
+                $media = $stmt2->get_result()->fetch_assoc();
+                $stmt2->close();
+            }
+        }
 
         view('media.categories', compact('categories', 'media_id', 'media'));
     }
@@ -50,19 +60,26 @@ class MediaController
              exit;
         }
 
-        // Fetch photos
-        // Legacy: SELECT * FROM photo WHERE category_id=?
-        $stmt = $conn->prepare("SELECT * FROM photo WHERE category_id = ? ORDER BY created_at DESC");
-        $stmt->bind_param("i", $category_id);
-        $stmt->execute();
-        $photos = $stmt->get_result();
+        $photos = null;
+        $category = null;
 
-        // Fetch category info for breadcrumb
-        // Legacy: SELECT c.*, m.name AS media_name FROM category c JOIN media m ...
-        $stmt2 = $conn->prepare("SELECT c.*, m.name AS media_name FROM category c JOIN media m ON c.media_id=m.id WHERE c.id = ?");
-        $stmt2->bind_param("i", $category_id);
-        $stmt2->execute();
-        $category = $stmt2->get_result()->fetch_assoc();
+        if ($conn && $category_id) {
+            $stmt = $conn->prepare("SELECT * FROM photo WHERE category_id = ? ORDER BY created_at DESC");
+            if ($stmt) {
+                $stmt->bind_param("i", $category_id);
+                $stmt->execute();
+                $photos = $stmt->get_result();
+                $stmt->close();
+            }
+
+            $stmt2 = $conn->prepare("SELECT c.*, m.name AS media_name FROM category c JOIN media m ON c.media_id=m.id WHERE c.id = ?");
+            if ($stmt2) {
+                $stmt2->bind_param("i", $category_id);
+                $stmt2->execute();
+                $category = $stmt2->get_result()->fetch_assoc();
+                $stmt2->close();
+            }
+        }
         
         view('media.photos', compact('photos', 'category_id', 'category'));
     }
