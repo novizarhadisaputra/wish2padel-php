@@ -35,6 +35,16 @@ if (!function_exists('loadEnv')) {
 loadEnv(__DIR__ . '/../.env');
 
 // Session Security Settings
+// Session Security Settings
+ini_set('session.cookie_httponly', 1);
+ini_set('session.use_strict_mode', 1);
+ini_set('session.cookie_samesite', 'Lax');
+
+// Only set secure cookie if HTTPS is detected
+if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') {
+    ini_set('session.cookie_secure', 1);
+}
+
 if (isset($_ENV['SESSION_SECURE'])) {
     ini_set('session.cookie_secure', $_ENV['SESSION_SECURE'] === 'true' ? '1' : '0');
 }

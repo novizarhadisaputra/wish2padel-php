@@ -11,6 +11,16 @@
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d
     
+    # Security Headers
+    <IfModule mod_headers.c>
+        Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+        Header always set X-Frame-Options "SAMEORIGIN"
+        Header always set X-Content-Type-Options "nosniff"
+        Header always set Referrer-Policy "strict-origin-when-cross-origin"
+        # CSP can be tricky, let's start with a report-only or basic one to avoid breaking things immediately
+        # Header always set Content-Security-Policy "default-src 'self' https:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: https:; font-src 'self' data: https:;"
+    </IfModule>
+
     # Rewrite everything to public/ folder
     # We use QSA to append query strings and L to stop processing further rules
     RewriteRule ^(.*)$ public/$1 [L,QSA]

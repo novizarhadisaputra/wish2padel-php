@@ -346,6 +346,13 @@ endwhile;
                     <label>Video URL</label>
                     <input type="url" name="video_url" class="form-control" value="<?= htmlspecialchars($p['video_url'] ?? '') ?>" placeholder="https://youtube.com/...">
                   </div>
+                  <div class="mb-3">
+                    <label>OR Upload Video</label>
+                    <input type="file" name="video_file" class="form-control" accept="video/mp4,video/webm,video/ogg">
+                    <?php if(!empty($p['video_url']) && !filter_var($p['video_url'], FILTER_VALIDATE_URL)): ?>
+                        <small class="text-muted d-block mt-1">Current File: <?= basename($p['video_url']) ?></small>
+                    <?php endif; ?>
+                  </div>
                 </div>
                 <div class="modal-footer">
                   <button type="submit" name="update_photo" class="btn-gold">Save</button>
@@ -408,6 +415,10 @@ endwhile;
             <div class="mb-3">
               <label>Video URL (Optional)</label>
               <input type="url" name="video_url" class="form-control" placeholder="https://youtube.com/...">
+            </div>
+            <div class="mb-3">
+              <label>OR Upload Video (Optional, max 50MB)</label>
+              <input type="file" name="video_file" class="form-control" accept="video/mp4,video/webm,video/ogg">
             </div>
           </div>
           <div class="modal-footer">

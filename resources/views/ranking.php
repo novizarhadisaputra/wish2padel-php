@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<?php view('partials.head', ['title' => 'Ranking - Padel League', 'css' => 'assets/css/stylee.css']); ?>
+<?php view('partials.head', ['title' => 'Ranking - Padel League']); ?>
 <body style="background-color:#303030">
 
 <?php view('partials.navbar'); ?>

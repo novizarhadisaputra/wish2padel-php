@@ -177,20 +177,25 @@ class SimplePaymentSystem
      * Create payment transaction record when payment is actually made
      * This should be called from payment verification after successful payment
      */
-    public function createPaymentTransaction(int $team_id, int $tournament_id, string $payment_id, array $payment_data = []): bool
+    public function createPaymentTransaction(int $team_id, int $tournament_id, string $payment_id, string $status, array $payment_data = []): bool
     {
         try {
             $now = date("Y-m-d H:i:s");
-            $amount = getDynamicPaymentAmount();
-            $currency = getDynamicPaymentCurrency();
+            // Prefer amount from payment data, clearly handling Cent vs Unit conversion if needed
+            // Moyasar returns amount in Cents (e.g. 10000)
+            $amount_cents = $payment_data['amount'] ?? getDynamicPaymentAmount();
+            $amount = $amount_cents / 100; // Store as Units in DB? Check existing schema
+            // Existing schema typically stores as Units (100.00) based on PaymentController usage
+            
+            $currency = $payment_data['currency'] ?? getDynamicPaymentCurrency();
 
             $stmt = $this->conn->prepare("
                 INSERT INTO payment_transactions 
                 (team_id, tournament_id, payment_id, amount, currency, status, 
                  payment_method, payment_data, created_at, updated_at)
-                VALUES (?, ?, ?, ?, ?, 'paid', 'moyasar', ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, 'moyasar', ?, ?, ?)
                 ON DUPLICATE KEY UPDATE 
-                    status = 'paid',
+                    status = VALUES(status),
                     payment_data = VALUES(payment_data),
                     updated_at = VALUES(updated_at)
             ");
@@ -198,12 +203,13 @@ class SimplePaymentSystem
             $payment_data_json = json_encode($payment_data);
 
             $stmt->bind_param(
-                "iisdssss",
+                "iisdsssss",
                 $team_id,
                 $tournament_id,
                 $payment_id,
                 $amount,
                 $currency,
+                $status,
                 $payment_data_json,
                 $now,
                 $now

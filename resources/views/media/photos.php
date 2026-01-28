@@ -61,17 +61,28 @@
             <?php if ($isVideo): ?>
                 <div class="ratio ratio-16x9">
                     <?php
-                        $embedUrl = $videoUrl;
-                        if (strpos($videoUrl, 'youtube.com/watch?v=') !== false) {
-                            $parts = parse_url($videoUrl);
-                            parse_str($parts['query'] ?? '', $query);
-                            if(isset($query['v'])) $embedUrl = "https://www.youtube.com/embed/" . $query['v'];
-                        } elseif (strpos($videoUrl, 'youtu.be/') !== false) {
-                            $path = parse_url($videoUrl, PHP_URL_PATH);
-                            $embedUrl = "https://www.youtube.com/embed" . $path;
+                        $isYoutube = (strpos($videoUrl, 'youtube.com') !== false || strpos($videoUrl, 'youtu.be') !== false);
+                        if ($isYoutube) {
+                            $embedUrl = $videoUrl;
+                            if (strpos($videoUrl, 'youtube.com/watch?v=') !== false) {
+                                $parts = parse_url($videoUrl);
+                                parse_str($parts['query'] ?? '', $query);
+                                if(isset($query['v'])) $embedUrl = "https://www.youtube.com/embed/" . $query['v'];
+                            } elseif (strpos($videoUrl, 'youtu.be/') !== false) {
+                                $path = parse_url($videoUrl, PHP_URL_PATH);
+                                $embedUrl = "https://www.youtube.com/embed" . $path;
+                            }
+                            echo '<iframe src="' . $embedUrl . '" allowfullscreen></iframe>';
+                        } else {
+                            // Local file
+                            // Ensure it has asset prefix if it's a relative path
+                            $fileSrc = (strpos($videoUrl, 'http') === 0) ? $videoUrl : asset($videoUrl);
+                            echo '<video controls class="w-100 h-100" style="object-fit:contain; background:#000;">
+                                    <source src="' . $fileSrc . '">
+                                    Your browser does not support the video tag.
+                                  </video>';
                         }
                     ?>
-                    <iframe src="<?= $embedUrl ?>" allowfullscreen></iframe>
                 </div>
             <?php else: ?>
                 <img src="<?= $imgSrc ?>" class="img-fluid w-100" alt="Photo">

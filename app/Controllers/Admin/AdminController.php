@@ -5,10 +5,51 @@ namespace App\Controllers\Admin;
 use Exception;
 use mysqli;
 
+use App\Services\PasswordService;
+
 class AdminController
 {
     // ... (Existing methods: division, news, sponsors, teams, matches, pair, result, tournament, playoff)
     // I will include ALL methods to ensure the file is complete.
+
+    public function personnel()
+    {
+        $this->ensureAdmin();
+        $conn = getDBConnection();
+        $search = $_GET['search'] ?? '';
+
+        $sql = "SELECT tm.id, tm.player_name, tm.role, 
+                       t.captain_phone as phone, t.captain_email as email, 
+                       t.team_name, l.name as league_name, tor.name as tournament_name
+                FROM team_members_info tm
+                JOIN team_info t ON tm.team_id = t.id
+                LEFT JOIN payment_transactions pt ON t.id = pt.team_id AND pt.status = 'paid'
+                LEFT JOIN tournaments tor ON pt.tournament_id = tor.id
+                LEFT JOIN league l ON tor.id_league = l.id
+                WHERE 1=1";
+        
+        $types = "";
+        $params = [];
+
+        if (!empty($search)) {
+            $sql .= " AND (tm.player_name LIKE ? OR t.team_name LIKE ?)";
+            $types .= "ss";
+            $term = "%$search%";
+            $params[] = $term; 
+            $params[] = $term;
+        }
+
+        $sql .= " ORDER BY t.team_name ASC, tm.role ASC";
+
+        $stmt = $conn->prepare($sql);
+        if (!empty($params)) {
+             $stmt->bind_param($types, ...$params);
+        }
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        view('admin.personnel', compact('result', 'search'));
+    }
 
     public function division()
     {
@@ -190,8 +231,15 @@ class AdminController
                     $conn->begin_transaction();
                     try {
                         $tables = ['payment_transactions', 'team_members_info', 'team_account', 'team_contact_details', 'team_experience'];
-                        foreach($tables as $tbl) { $conn->query("DELETE FROM $tbl WHERE team_id = $team_id"); }
-                        $conn->query("DELETE FROM team_info WHERE id = $team_id");
+                        foreach($tables as $tbl) { 
+                            // Tables are hardcoded array above, so safe to interpolate table name, but IDs should be bound
+                            $stmtDel = $conn->prepare("DELETE FROM $tbl WHERE team_id = ?");
+                            $stmtDel->bind_param("i", $team_id);
+                            $stmtDel->execute();
+                        }
+                        $stmtInfo = $conn->prepare("DELETE FROM team_info WHERE id = ?");
+                        $stmtInfo->bind_param("i", $team_id);
+                        $stmtInfo->execute();
                         $conn->commit();
                         $flash = ["type" => "success", "msg" => "Team deleted successfully."];
                     } catch (\Throwable $e) {
@@ -231,12 +279,60 @@ class AdminController
         $leagues = $conn->query("SELECT id, name, date FROM league ORDER BY name ASC");
         $divisions_all = $conn->query("SELECT id, division_name FROM divisions ORDER BY id ASC")->fetch_all(MYSQLI_ASSOC);
         $tournamentsSql = "SELECT t.id, t.name AS tournament_name, l.name AS league_name, date AS league_year FROM tournaments t LEFT JOIN league l ON t.id_league = l.id";
-        if (!empty($league_id)) $tournamentsSql .= " WHERE l.id = $league_id";
-        $tournamentsSql .= " ORDER BY t.name ASC";
-        $tournaments = $conn->query($tournamentsSql);
+        if (!empty($league_id)) {
+             $tournamentsSql .= " WHERE l.id = ?";
+             $stmtTour = $conn->prepare($tournamentsSql);
+             $stmtTour->bind_param("i", $league_id);
+             $stmtTour->execute();
+             $tournaments = $stmtTour->get_result();
+        } else {
+             $tournamentsSql .= " ORDER BY t.name ASC";
+             $tournaments = $conn->query($tournamentsSql);
+        }
         $teams_list = $conn->query("SELECT id, team_name FROM team_info ORDER BY team_name ASC");
 
         view('admin.team', compact('result', 'leagues', 'tournaments', 'teams_list', 'search', 'league_id', 'tournament_id', 'team_id', 'flash'));
+    }
+
+    public function penalties()
+    {
+        $this->ensureAdmin();
+        $conn = getDBConnection();
+
+        if (isset($_POST['store_penalty'])) {
+            $team_id = (int)$_POST['team_id'];
+            $tournament_id = (int)$_POST['tournament_id'];
+            $points = (int)$_POST['points_deduction'];
+            $fine = (float)$_POST['fine_amount'];
+            $reason = $_POST['reason'];
+
+            $stmt = $conn->prepare("INSERT INTO team_penalties (team_id, tournament_id, points_deduction, fine_amount, reason) VALUES (?, ?, ?, ?, ?)");
+            $stmt->bind_param("iiids", $team_id, $tournament_id, $points, $fine, $reason);
+            $stmt->execute();
+            redirect('/admin/penalties');
+        }
+
+        if (isset($_POST['delete_penalty'])) {
+            $id = (int)$_POST['penalty_id'];
+            $stmt = $conn->prepare("DELETE FROM team_penalties WHERE id = ?");
+            $stmt->bind_param("i", $id);
+            $stmt->execute();
+            redirect('/admin/penalties');
+        }
+
+        $sql = "SELECT p.*, t.team_name, tor.name as tournament_name 
+                FROM team_penalties p 
+                JOIN team_info t ON p.team_id = t.id 
+                JOIN tournaments tor ON p.tournament_id = tor.id 
+                ORDER BY p.created_at DESC";
+        
+        $penalties = $conn->query($sql);
+        
+        // Fetch data for form
+        $teams = $conn->query("SELECT id, team_name FROM team_info ORDER BY team_name ASC");
+        $tournaments = $conn->query("SELECT id, name FROM tournaments ORDER BY id DESC");
+
+        view('admin.penalties', compact('penalties', 'teams', 'tournaments'));
     }
 
     public function matches()
@@ -419,7 +515,10 @@ class AdminController
 
                 // Record Result (Opponent Wins)
                 // Remove existing results for this match to avoid duplicates
-                $conn->query("DELETE FROM match_results WHERE match_id = $match_id");
+                // Remove existing results for this match to avoid duplicates
+                $stmtDelRes = $conn->prepare("DELETE FROM match_results WHERE match_id = ?");
+                $stmtDelRes->bind_param("i", $match_id);
+                $stmtDelRes->execute();
 
                 // Add winner result. NOTE: winner_team_id column assumed based on LeagueController usage.
                 // We use ignore in case of schema mismatch, but really we rely on it working.
@@ -914,6 +1013,14 @@ class AdminController
             $category_id = intval($_POST['category_id']);
             $video_url = !empty($_POST['video_url']) ? trim($_POST['video_url']) : null;
 
+            // Handle Video File Upload
+            if (!empty($_FILES['video_file']['name'])) {
+                $vidName = time().'_vid_'.basename($_FILES['video_file']['name']);
+                if (move_uploaded_file($_FILES['video_file']['tmp_name'], $uploadDir.$vidName)) {
+                    $video_url = 'uploads/gallery/' . $vidName;
+                }
+            }
+
             if($category_id && !empty($_FILES['image']['name'])){
                 $fileName = time().'_'.basename($_FILES['image']['name']);
                 move_uploaded_file($_FILES['image']['tmp_name'],$uploadDir.$fileName);
@@ -930,6 +1037,14 @@ class AdminController
             $id = intval($_POST['id']);
             $category_id = intval($_POST['category_id']);
             $video_url = !empty($_POST['video_url']) ? trim($_POST['video_url']) : null;
+
+            // Handle Video File Upload
+            if (!empty($_FILES['video_file']['name'])) {
+                $vidName = time().'_vid_'.basename($_FILES['video_file']['name']);
+                if (move_uploaded_file($_FILES['video_file']['tmp_name'], $uploadDir.$vidName)) {
+                    $video_url = 'uploads/gallery/' . $vidName;
+                }
+            }
 
             if (!empty($_FILES['image']['name'])) {
                 $fileName = time().'_'.basename($_FILES['image']['name']);
@@ -1217,30 +1332,13 @@ class AdminController
                 $confirm = $_POST['confirm_password'];
                 $userId = $_SESSION['user_id'];
 
-                if ($new !== $confirm) {
-                    $error = "New passwords do not match.";
+                $passwordService = new PasswordService($conn);
+                $result = $passwordService->changePassword($userId, $current, $new, $confirm);
+
+                if ($result['success']) {
+                    $success = $result['message'];
                 } else {
-                    $stmt = $conn->prepare("SELECT password_hash FROM users WHERE id = ?");
-                    $stmt->bind_param("i", $userId);
-                    $stmt->execute();
-                    $res = $stmt->get_result();
-                    if ($row = $res->fetch_assoc()) {
-                        if (password_verify($current, $row['password_hash'])) {
-                            $newHash = password_hash($new, PASSWORD_DEFAULT);
-                            $stmtUpd = $conn->prepare("UPDATE users SET password_hash = ? WHERE id = ?");
-                            $stmtUpd->bind_param("si", $newHash, $userId);
-                            if ($stmtUpd->execute()) {
-                                $success = "Password changed successfully.";
-                            } else {
-                                $error = "Database error.";
-                            }
-                        } else {
-                            $error = "Incorrect current password.";
-                        }
-                    } else {
-                         // Fallback for environment where session user might not be in DB or check fails
-                         $error = "User not found.";
-                    }
+                    $error = $result['message'];
                 }
             }
         }

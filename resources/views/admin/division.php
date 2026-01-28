@@ -18,7 +18,7 @@
     
     <section class="container py-5">
       <h2 class="fw-bold mb-3 text-white">
-        <i class="bi bi-people-fill me-2 text-white"></i> Division Teams
+        Division Teams
       </h2>
     
       <div class="mb-4">

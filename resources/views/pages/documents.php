@@ -1,64 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Documents - Wish2Padel</title>
-  <link rel="icon" type="image/png" sizes="32x32" href="https://www.wish2padel.com/assets/image/w2p.png">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
-  <link rel="stylesheet" href="<?= asset('assets/css/stylee.css?v=12') ?>">
-
-  <link rel="icon" type="image/png" sizes="32x32" href="https://www.wish2padel.com/assets/image/w2p logo.jpeg">
-  <link rel="icon" type="image/png" sizes="16x16" href="https://www.wish2padel.com/assets/image/w2p logo.jpeg">
-  <link rel="apple-touch-icon" href="https://www.wish2padel.com/assets/image/w2p logo.jpeg">
-
-  <style>
-    body { background-color: #303030; }
-    .document-section { padding: 60px 0; }
-    .document-card {
-      background-color: #fff;
-      border-radius: 15px;
-      padding: 20px 20px;
-      text-align: center;
-      box-shadow: 0 6px 25px rgba(0,0,0,0.12);
-      transition: transform 0.3s, box-shadow 0.3s;
-      position: relative;
-      overflow: hidden;
-    }
-    h5 {
-        font-size: 18px;
-    }
- 
-    .document-card::after {
-      content: "";
-      position: absolute;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: linear-gradient(135deg, rgba(255,193,7,0.15), rgba(255,193,7,0));
-      opacity: 0;
-      transition: opacity 0.3s;
-      pointer-events: none;
-    }
-    .document-card:hover {
-      transform: translateY(-8px);
-      box-shadow: 0 12px 40px rgba(0,0,0,0.2);
-    }
-    .document-card:hover::after { opacity: 1; }
-    .document-card img { width: 140px; height: auto; margin-bottom: 20px; transition: transform 0.3s; }
-    .document-card:hover img { transform: scale(1.1); }
-    .document-card h5 { font-weight: 700; color: #222; margin-bottom: 10px; }
-    .document-card p { font-size: 0.95rem; color: #555; margin-bottom: 15px; }
-    @media (max-width: 768px) { .document-card img { width: 70px; } }
-    .fade-in { opacity: 0; transform: translateY(20px); transition: opacity 0.6s ease-out, transform 0.6s ease-out; }
-    .fade-in.visible { opacity: 1; transform: translateY(0); }
-  </style>
-</head>
+<?php view('partials.head', ['title' => 'Documents - Wish2Padel']); ?>
 <body>
 
 <?php view('partials.navbar'); ?>
 
-<section class="document-section text-center">
+<section class="document-section text-center" id="documents-hero">
   <div class="container">
     <h1 style="color:#f3e6b6; margin-bottom: 15px;">Wish2Padel Official Documents</h1>
     <p class="mb-5 text-white">Access official league rules, registration, and payment guidelines for a smooth padel experience.</p>
@@ -131,6 +78,8 @@
 </section>
 
 <?php view('partials.footer'); ?>
+
+<?php view('partials.navbar_sticky_script', ['sticky_target' => 'documents-hero']); ?>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>

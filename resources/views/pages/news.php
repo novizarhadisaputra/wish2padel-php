@@ -1,16 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <link rel="icon" type="image/png" sizes="32x32" href="<?= asset('assets/image/w2p%20logo.jpeg') ?>">
-        <link rel="icon" type="image/png" sizes="16x16" href="<?= asset('assets/image/w2p%20logo.jpeg') ?>">
-        <link rel="apple-touch-icon" href="<?= asset('assets/image/w2p%20logo.jpeg') ?>">
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>News - Wish2Padel</title>
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
-        <link rel="stylesheet" href="<?= asset('assets/css/stylee.css?v=12') ?>">
-    </head>
+    <?php view('partials.head', ['title' => 'News - Wish2Padel']); ?>
     <body style="background-color:#303030;">
         <?php view('partials.navbar'); ?>
         
@@ -131,30 +121,8 @@
         </script>
         
         
-        <script>
-          document.addEventListener('DOMContentLoaded', function () {
-            const navbar = document.getElementById('maiavbar');
-            const hero = document.getElementById('news'); // Pastikan ada elemen heroCarousel di halaman
         
-            function toggleNavbarFixed() {
-              if (!hero) return; // kalau heroCarousel gak ada, skip
-        
-              const scrollPos = window.scrollY;
-              const heroHeight = hero.offsetHeight;
-        
-              if (scrollPos >= heroHeight) {
-                navbar.classList.add('navbar-fixed');
-                document.body.style.paddingTop = navbar.offsetHeight + 'px'; // supaya konten gak tertutup
-              } else {
-                navbar.classList.remove('navbar-fixed');
-                document.body.style.paddingTop = '0';
-              }
-            }
-        
-            window.addEventListener('scroll', toggleNavbarFixed);
-            toggleNavbarFixed(); // jalankan sekali saat load
-          });
-        </script>
+        <?php view('partials.navbar_sticky_script', ['sticky_target' => 'news']); ?>
         
         
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

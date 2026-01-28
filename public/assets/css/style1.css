@@ -4,6 +4,7 @@ nav.navbar {
   font-size: 1rem;
   font-weight: 600;
 }
+
 nav .navbar-brand {
   color: #ffffff;
   font-weight: 700;
@@ -15,10 +16,12 @@ nav .navbar-brand {
   user-select: none;
   min-width: 150px;
 }
+
 nav .nav-item {
   margin-left: 20px;
 }
-nav .navbar-nav > li > a.nav-link {
+
+nav .navbar-nav>li>a.nav-link {
   color: #ffffff;
   padding: 1rem 1.5rem;
   display: flex;
@@ -30,20 +33,22 @@ nav .navbar-nav > li > a.nav-link {
   text-align: center;
   user-select: none;
 }
-nav .navbar-nav > li > a.nav-link:hover,
-nav .navbar-nav > li > a.nav-link:focus {
+
+nav .navbar-nav>li>a.nav-link:hover,
+nav .navbar-nav>li>a.nav-link:focus {
   color: #fff9c4;
   background-color: rgba(255, 255, 255, 0.1);
   border-radius: 8px;
   text-decoration: none;
 }
-nav .navbar-nav > li.show > a.nav-link,
-nav .navbar-nav > li > a.nav-link.active {
+
+nav .navbar-nav>li.show>a.nav-link,
+nav .navbar-nav>li>a.nav-link.active {
   color: #fff;
   font-weight: 700;
 }
 
-nav .navbar-nav > li > a.nav-link.active::after {
+nav .navbar-nav>li>a.nav-link.active::after {
   content: "";
   position: absolute;
   bottom: 6px;
@@ -54,16 +59,20 @@ nav .navbar-nav > li > a.nav-link.active::after {
   border-radius: 2px;
   transition: width 0.3s ease;
 }
-nav .navbar-nav > li > a.nav-link:hover::after {
+
+nav .navbar-nav>li>a.nav-link:hover::after {
   width: 60%;
   background-color: #fff9c4;
 }
 
 .dropdown-menu.mega-dropdown {
   position: absolute;
-  width: 100%; /* Ikuti lebar induk (navbar) */
-  left: 0; /* mulai dari kiri navbar */
-  right: auto; /* hapus right: 0 supaya tidak stretch ke kanan layar */
+  width: 100%;
+  /* Ikuti lebar induk (navbar) */
+  left: 0;
+  /* mulai dari kiri navbar */
+  right: auto;
+  /* hapus right: 0 supaya tidak stretch ke kanan layar */
   top: 100%;
   padding: 1.5rem 2rem;
   border-radius: 0;
@@ -73,13 +82,15 @@ nav .navbar-nav > li > a.nav-link:hover::after {
   color: #004d40;
   font-weight: 600;
   font-size: 1rem;
-  max-width: none; /* pastikan tidak dibatasi max-width */
+  max-width: none;
+  /* pastikan tidak dibatasi max-width */
   box-sizing: border-box;
 }
 
-.mega-dropdown .row > div {
+.mega-dropdown .row>div {
   padding: 0 1rem;
 }
+
 .mega-dropdown h6 {
   font-weight: 700;
   margin-bottom: 0.75rem;
@@ -87,19 +98,21 @@ nav .navbar-nav > li > a.nav-link:hover::after {
   border-bottom: 3px solid #d4af37;
   padding-bottom: 0.4rem;
 }
+
 .mega-dropdown a.dropdown-item {
   padding-left: 0;
   color: #004d40;
   font-weight: 500;
   transition: color 0.25s ease;
 }
+
 .mega-dropdown a.dropdown-item:hover {
   color: #d4af37;
   font-weight: 700;
   background-color: transparent;
 }
 
-.navbar-nav.ms-auto > li > a.nav-link {
+.navbar-nav.ms-auto>li>a.nav-link {
   color: #c8f0e8;
   font-weight: 700;
   padding: 1rem 1.3rem;
@@ -109,8 +122,9 @@ nav .navbar-nav > li > a.nav-link:hover::after {
   justify-content: center;
   user-select: none;
 }
-.navbar-nav.ms-auto > li > a.nav-link:hover,
-.navbar-nav.ms-auto > li.show > a.nav-link {
+
+.navbar-nav.ms-auto>li>a.nav-link:hover,
+.navbar-nav.ms-auto>li.show>a.nav-link {
   color: #fff;
   background-color: rgba(255, 255, 255, 0.15);
   border-radius: 8px;
@@ -119,25 +133,83 @@ nav .navbar-nav > li > a.nav-link:hover::after {
 
 .btn-gold {
   margin-top: 8px;
-  background-color: #B09874;
+  background: #F3E6B6 !important;
+  background-color: #F3E6B6 !important;
   color: #212121 !important;
   font-weight: 700;
-  padding: 0.6rem 1.3rem;
+  padding: 10px 21px;
   border-radius: 25px;
   box-shadow: 0 5px 12px rgba(255, 215, 0, 0.5);
   border: none;
-  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  transition: all 0.3s ease;
   user-select: none;
+  font-size: 16px;
+  letter-spacing: normal;
+  text-transform: none;
 }
+
 .btn-gold:hover {
-  background-color: #B09874;
-  box-shadow: 0 7px 18px rgba(230, 194, 0, 0.7);
-  text-decoration: none;
+  background-color: #F3E6B6;
+  box-shadow: 0 7px 18px rgba(255, 215, 0, 0.7);
+  transform: translateY(-2px);
   color: #212121 !important;
 }
+
 .btn-gold:active {
-  background-color: #b89a00;
-  box-shadow: none;
+  transform: translateY(1px);
+  box-shadow: 0 2px 10px rgba(255, 215, 0, 0.4);
+}
+
+/* Modal Dark Theme */
+.modal-dark .modal-content {
+  background: linear-gradient(145deg, #1a1a1a, #222);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  box-shadow: 0 0 25px rgba(0, 0, 0, 0.8);
+  color: #fff;
+}
+
+.modal-dark .modal-header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.modal-dark .modal-footer {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.modal-dark .modal-title {
+  color: #d4af37;
+  font-weight: 700;
+}
+
+.modal-dark .btn-close {
+  filter: invert(1) grayscale(100%) brightness(200%);
+}
+
+.modal-dark .form-control,
+.modal-dark .form-select {
+  background-color: #2a2a2a;
+  border: 1px solid #444;
+  color: #fff;
+}
+
+.table-dark.admin-table th {
+  background-color: #121212;
+  /* Match body background as requested */
+  border-bottom: 2px solid #333;
+  color: #d4af37;
+}
+
+.modal-dark .form-control:focus,
+.modal-dark .form-select:focus {
+  background-color: #333;
+  border-color: #d4af37;
+  color: #fff;
+  box-shadow: 0 0 0 0.25rem rgba(212, 175, 55, 0.25);
+}
+
+.modal-dark .form-label {
+  color: #d4af37;
+  font-weight: 500;
 }
 
 @media (max-width: 1253px) {
@@ -145,6 +217,7 @@ nav .navbar-nav > li > a.nav-link:hover::after {
     margin-left: 10px;
     margin-right: 20px;
   }
+
   nav .nav-item {
     margin-left: 10px;
   }
@@ -155,13 +228,15 @@ nav .navbar-nav > li > a.nav-link:hover::after {
   nav .navbar-brand {
     margin-left: 0px;
   }
+
   nav .navbar-brand,
-  nav .navbar-nav > li > a.nav-link {
+  nav .navbar-nav>li>a.nav-link {
     justify-content: flex-start;
     text-align: left;
     padding-left: 1rem;
   }
-  .navbar-nav.ms-auto > li > a.nav-link,
+
+  .navbar-nav.ms-auto>li>a.nav-link,
   .btn-login {
     margin-right: 0.7rem;
   }
@@ -268,9 +343,11 @@ nav .navbar-nav > li > a.nav-link:hover::after {
 .carousel-item.active .animate-text.delay-1 {
   animation: fadeSlideIn 0.6s 0.2s forwards;
 }
+
 .carousel-item.active .animate-text.delay-2 {
   animation: fadeSlideIn 0.6s 0.8s forwards;
 }
+
 .carousel-item.active .animate-text.delay-3 {
   animation: fadeSlideIn 0.6s 1.4s forwards;
 }
@@ -468,7 +545,8 @@ nav .navbar-nav > li > a.nav-link:hover::after {
   font-size: 1.5rem;
   border-radius: 50%;
   cursor: pointer;
-  display: none; /* hidden by default */
+  display: none;
+  /* hidden by default */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   transition: background-color 0.3s ease, transform 0.3s ease;
 }
@@ -482,7 +560,7 @@ nav .navbar-nav > li > a.nav-link:hover::after {
 nav#maiavbar {
   width: 100%;
   transition: all 0.3s ease;
-  z-index: 9999;
+  z-index: 1030;
 }
 
 /* Navbar jadi fixed dan muncul dengan animasi */
@@ -500,8 +578,132 @@ nav#maiavbar.navbar-fixed {
     opacity: 0;
     transform: translateY(-20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* Admin Dark Theme Standardization */
+body.admin-page {
+  background-color: #121212 !important;
+  color: #ffffff;
+  font-family: 'Inter', sans-serif;
+}
+
+.card.admin-card {
+  background-color: #1e1e1e;
+  border: 1px solid #333;
+  color: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.card.admin-card .card-header {
+  background-color: #1e1e1e;
+  border-bottom: 1px solid #333;
+  color: #fff;
+  padding: 1.25rem;
+}
+
+/* Match Admin Gold Button to Public "Register Team" style */
+.btn-admin-gold {
+  background: #F3E6B6 !important;
+  background-color: #F3E6B6 !important;
+  color: #212121 !important;
+  font-weight: 700;
+  padding: 10px 21px;
+  border-radius: 25px;
+  box-shadow: 0 5px 12px rgba(255, 215, 0, 0.5);
+  border: none;
+  transition: all 0.3s ease;
+  user-select: none;
+  font-size: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+.btn-admin-gold:hover {
+  background-color: #F3E6B6;
+  box-shadow: 0 7px 18px rgba(255, 215, 0, 0.7);
+  transform: translateY(-2px);
+  color: #212121 !important;
+}
+
+.btn-admin-gold:active {
+  transform: translateY(1px);
+}
+
+/* Admin Table Dark Override */
+.table-dark.admin-table {
+  --bs-table-bg: #1e1e1e;
+  --bs-table-border-color: #333;
+  color: #fff;
+}
+
+.table-dark.admin-table th {
+  background-color: #121212 !important;
+  /* Header matches body background */
+  border-bottom: 2px solid #444;
+  color: #d4af37 !important;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  letter-spacing: 1px;
+  padding: 1rem;
+}
+
+.table-dark.admin-table td {
+  border-color: #333;
+  color: #e0e0e0;
+  padding: 1rem;
+}
+
+.text-gold {
+  color: #F3E6B6 !important;
+}
+
+/* Admin Form Controls (Inputs/Selects) */
+.admin-card .form-control,
+.admin-card .form-select,
+.modal-content .form-control,
+.modal-content .form-select {
+  background-color: #2c2c2c;
+  border: 1px solid #444;
+  color: #fff;
+}
+
+/* Modal Dark Adjustments (Double Check) */
+.modal-dark .modal-content {
+  background-color: #1e1e1e !important;
+  border: 1px solid #333;
+}
+
+/* Global Admin Button & Badge Uniformity (25px Rounded) */
+.admin-page .btn {
+  border-radius: 25px !important;
+}
+
+.admin-page .badge {
+  border-radius: 20px !important;
+  /* Slightly less but still pill-shaped */
+  padding: 0.5rem 0.8rem;
+}
+
+/* Ensure search bar inputs are also nicely rounded */
+.admin-page .form-control,
+.admin-page .form-select {
+  border-radius: 10px;
+}
+
+/* Fix for Modals being covered by Navbar */
+.modal {
+  z-index: 1070 !important;
+}
+
+.modal-backdrop {
+  z-index: 1060 !important;
 }

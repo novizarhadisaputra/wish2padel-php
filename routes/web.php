@@ -22,7 +22,7 @@ Router::get('/regis', 'LeagueController@registration');
 Router::get('/tournament', 'TournamentController@show');
 Router::get('/club', 'ClubController@index');
 Router::get('/news', 'PageController@news');
-Router::get('/sponsor', 'PageController@sponsors');
+Router::get('/sponsors', 'PageController@sponsors');
 Router::get('/club-detail', 'ClubController@show');
 Router::get('/news-detail', 'PageController@newsDetail');
 Router::get('/match', 'MatchController@show');
@@ -58,6 +58,7 @@ Router::get('/media/categories', 'MediaController@categories');
 Router::get('/media/photos', 'MediaController@photos');
 
 // Admin Core Pages Migration
+Router::get('/admin/personnel', 'Admin\AdminController@personnel');
 Router::get('/admin/division', 'Admin\AdminController@division');
 Router::post('/admin/division', 'Admin\AdminController@division');
 
@@ -111,6 +112,9 @@ Router::get('/admin/registrations', 'Admin\AdminController@registrations');
 
 Router::get('/admin/windows', 'Admin\AdminController@windows');
 Router::post('/admin/windows', 'Admin\AdminController@windows');
+
+Router::get('/admin/penalties', 'Admin\AdminController@penalties');
+Router::post('/admin/penalties', 'Admin\AdminController@penalties');
 
 // Admin Club Management
 Router::get('/admin/club', 'Admin\ClubController@index');

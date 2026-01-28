@@ -21,6 +21,6 @@
     <?php if (isset($css)): ?>
         <link rel="stylesheet" href="<?= asset($css) ?>">
     <?php else: ?>
-        <link rel="stylesheet" href="<?= asset('assets/css/stylee.css?v=12') ?>">
+        <link rel="stylesheet" href="<?= asset('assets/css/style1.css') ?>">
     <?php endif; ?>
 </head>

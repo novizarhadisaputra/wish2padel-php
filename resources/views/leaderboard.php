@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<?php view('partials.head', ['title' => 'Leaderboard - Padel League', 'css' => 'assets/css/style.css']); ?>
+<?php view('partials.head', ['title' => 'Leaderboard - Padel League']); ?>
 
 <body>
 

@@ -106,8 +106,6 @@ class PaymentController
         $paymentSystem = new SimplePaymentSystem();
         $error = ''; $success = '';
         $payment_id = $_GET['payment_id'] ?? $_GET['id'] ?? null;
-        $status = $_GET['status'] ?? null;
-        $message = $_GET['message'] ?? '';
         $team_id = isset($_GET['team_id']) ? (int)$_GET['team_id'] : 0;
         $tournament_id = isset($_GET['tournament_id']) ? (int)$_GET['tournament_id'] : 1;
 
@@ -115,150 +113,137 @@ class PaymentController
             $error = "Missing parameters.";
         } else {
             try {
-                if (!$conn) throw new Exception("Database connection unavailable.");
-                
-                $stmt = $conn->prepare("SELECT id FROM team_info WHERE id = ? AND tournament_id = ?");
-                if ($stmt) {
-                    $stmt->bind_param("ii", $team_id, $tournament_id);
-                    $stmt->execute();
-                    if (!$stmt->get_result()->fetch_assoc()) throw new Exception("Team not found.");
-                    $stmt->close();
-                }
+                if (!$payment_id) throw new Exception("No payment ID provided.");
 
-                if ($paymentSystem->isTeamPaid($team_id, $tournament_id)) {
-                    $success = "Team already paid.";
-                } elseif ($payment_id) {
-                    $verification_result = $paymentSystem->verifyPaymentWithMoyasar($payment_id);
-                    if ($verification_result['status'] === 'success') {
-                        $payment_status = $verification_result['payment_status'];
-                        $payment_details = $verification_result['payment_data'];
-                        if ($payment_status === 'paid' || $payment_status === 'captured') {
-                            if ($this->updateTeamPaymentRecord($conn, $team_id, $tournament_id, $payment_id, $payment_details)) {
-                                $_SESSION['team_id'] = $team_id;
-                                $success = "Payment successful!";
-                            } else {
-                                $paymentSystem->refundPayment($payment_id, null, "DB Error");
-                                $error = "System error. Payment refunded.";
-                            }
+                // Verify with Moyasar
+                $verification = $paymentSystem->verifyPaymentWithMoyasar($payment_id);
+                
+                if ($verification['status'] === 'success') {
+                    $payment_status = $verification['payment_status'];
+                    $payment_data = $verification['payment_data'];
+                    
+                    // Security Check: Validate Metadata matches GET parameters
+                    // This prevents users from using a valid payment_id from another team to "verify" their own
+                    $meta_team_id = $payment_data['metadata']['team_id'] ?? null;
+                    $meta_tour_id = $payment_data['metadata']['tournament_id'] ?? null;
+
+                    if ($meta_team_id && (int)$meta_team_id !== (int)$team_id) {
+                         error_log("Payment Validation Warning: Team ID mismatch. GET: $team_id, META: $meta_team_id");
+                         $team_id = (int)$meta_team_id;
+                    }
+                    
+                    if ($meta_tour_id && (int)$meta_tour_id !== (int)$tournament_id) {
+                         $tournament_id = (int)$meta_tour_id;
+                    }
+
+                    // Map Status
+                    $dbStatus = 'pending';
+                    if ($payment_status === 'paid' || $payment_status === 'captured') $dbStatus = 'paid';
+                    elseif ($payment_status === 'failed' || $payment_status === 'canceled' || $payment_status === 'cancelled') $dbStatus = 'failed';
+                    elseif ($payment_status === 'refunded') $dbStatus = 'refunded';
+                    
+                    // Upsert Transaction
+                    if ($paymentSystem->createPaymentTransaction($team_id, $tournament_id, $payment_id, $dbStatus, $payment_data)) {
+                        if ($dbStatus === 'paid') {
+                            $_SESSION['team_id'] = $team_id;
+                            $success = "Payment successful!";
                         } else {
                             $error = "Payment status: " . $payment_status;
                         }
                     } else {
-                        // Fallback
-                        if ($status === 'paid' && $message === 'APPROVED') {
-                             $fallback_details = ['id'=>$payment_id, 'status'=>'paid', 'amount'=>10000, 'currency'=>'SAR', 'source'=>['type'=>'unknown']];
-                             if ($this->updateTeamPaymentRecord($conn, $team_id, $tournament_id, $payment_id, $fallback_details)) {
-                                 $_SESSION['team_id'] = $team_id;
-                                 $success = "Payment successful!";
-                             } else {
-                                 $error = "System error.";
-                             }
-                        } else {
-                            $error = "Verification failed.";
-                        }
+                        $error = "Failed to save payment record.";
                     }
                 } else {
-                    $error = "No payment ID.";
+                    $error = "Verification failed: " . ($verification['message'] ?? 'Unknown error');
                 }
             } catch (Exception $e) {
                 $error = "Error: " . $e->getMessage();
             }
         }
+
         $redirect_url = asset("payment?team_id=$team_id&tournament_id=$tournament_id");
         if ($success) $redirect_url .= "&status=success";
         elseif ($error) $redirect_url .= "&status=failed&error=" . urlencode($error);
-        redirect($redirect_url); // Uses helper if available or header loc
+        redirect($redirect_url);
     }
 
     public function webhook()
     {
         header('Content-Type: application/json');
-        http_response_code(200);
+        
+        $input = file_get_contents('php://input');
+        // Log raw webhook
+        error_log("Moyasar Webhook Raw: " . $input);
+        
+        $payload = json_decode($input, true);
+        if (!$payload) $payload = $_POST; // Fallback
+        
+        $payment_id = $payload['id'] ?? null;
+
+        if (!$payment_id) {
+            http_response_code(400); 
+            echo json_encode(['status'=>'error', 'message'=>'Missing ID']);
+            exit;
+        }
 
         try {
-            $payment_system = new SimplePaymentSystem();
-
-            $input = file_get_contents('php://input');
-            $payload = json_decode($input, true);
-            if (!$payload) $payload = $_POST;
-            if (!$payload) $payload = $_GET;
-
-            $payment_id = $payload['id'] ?? null;
-            $status = $payload['status'] ?? null;
-
-            if (!$payment_id) {
-                echo json_encode(['status'=>'error', 'message'=>'Missing ID']);
+            $paymentSystem = new SimplePaymentSystem();
+            
+            // 1. Verify with Moyasar (Always source of truth)
+            $verification = $paymentSystem->verifyPaymentWithMoyasar($payment_id);
+            if ($verification['status'] !== 'success') {
+                http_response_code(400);
+                echo json_encode(['status'=>'error', 'message'=>'Could not verify payment with Moyasar']);
                 exit;
             }
+            
+            $data = $verification['payment_data'];
+            $payment_status = $verification['payment_status']; // paid, failed, etc.
+            
+            // Map Status
+            $dbStatus = 'pending';
+            if ($payment_status === 'paid' || $payment_status === 'captured') $dbStatus = 'paid';
+            elseif ($payment_status === 'failed' || $payment_status === 'canceled' || $payment_status === 'cancelled') $dbStatus = 'failed';
+            elseif ($payment_status === 'refunded') $dbStatus = 'refunded';
 
-            // Verify with Moyasar API
-            $verified_status = $status;
-            try {
-                // If payment ID is present, we try to verify/fetch details via API
-                // Note: SimplePaymentSystem might not expose a direct "verify and return status" easily without team_id context,
-                // but let's check `verifyPaymentWithMoyasar`.
-                $res = $payment_system->verifyPaymentWithMoyasar($payment_id);
-                if ($res['status'] === 'success') {
-                    $verified_status = $res['payment_status'];
-                }
-            } catch (Exception $e) {
-                // Log error
+            // 2. Extract metadata
+            $meta = $data['metadata'] ?? [];
+            $team_id = $meta['team_id'] ?? null;
+            $t_id = $meta['tournament_id'] ?? null;
+            
+            // 3. Upsert Transaction
+            // If team_id/tournament_id are present, use them.
+            // If not present in metadata (e.g. older payments?), try to find mostly matching record?
+            // For now, require metadata.
+            
+            if ($team_id && $t_id) {
+                 $result = $paymentSystem->createPaymentTransaction((int)$team_id, (int)$t_id, $payment_id, $dbStatus, $data);
+                 echo json_encode(['status'=>'success', 'updated'=>$result, 'db_status'=>$dbStatus]);
+            } else {
+                 // Try to Find existing record by payment_id to get team_id
+                 $conn = getDBConnection();
+                 $stmt = $conn->prepare("SELECT team_id, tournament_id FROM payment_transactions WHERE payment_id = ?");
+                 $stmt->bind_param("s", $payment_id);
+                 $stmt->execute();
+                 $res = $stmt->get_result()->fetch_assoc();
+                 $stmt->close();
+                 
+                 if ($res) {
+                     $result = $paymentSystem->createPaymentTransaction((int)$res['team_id'], (int)$res['tournament_id'], $payment_id, $dbStatus, $data);
+                     echo json_encode(['status'=>'success', 'updated'=>$result, 'note'=>'Used local team_id']);
+                 } else {
+                     error_log("Webhook Error: Metadata missing and local record not found for Payment ID $payment_id");
+                     http_response_code(404);
+                     echo json_encode(['status'=>'ignored', 'message'=>'Metadata missing and not found locally']);
+                 }
             }
-
-            // Update DB
-            // Note: `updatePaymentFromCallback` in SimplePaymentSystem handles looking up the transaction by payment_id
-            // We don't need team_id/tournament_id if the transaction exists in DB.
-            $result = $payment_system->updatePaymentFromCallback($payment_id, $verified_status, "Webhook Update");
-
-            echo json_encode(['status'=>'success', 'updated'=>$result]);
-
+            
         } catch (Exception $e) {
+            error_log("Webhook Error: " . $e->getMessage());
+            http_response_code(500);
             echo json_encode(['status'=>'error', 'message'=>$e->getMessage()]);
         }
     }
 
-    private function getPaymentMethod($payment_details) {
-        $type = $payment_details['source']['type'] ?? 'unknown';
-        switch ($type) {
-            case 'applepay': return 'apple_pay';
-            case 'creditcard': case 'credit_card': return 'credit_card';
-            case 'sadad': return 'sadad';
-            case 'stc_pay': return 'stc_pay';
-            default: return 'moyasar';
-        }
-    }
 
-    private function updateTeamPaymentRecord($conn, $team_id, $tournament_id, $payment_id, $payment_details = null) {
-        if (!$conn) return false;
-        try {
-            $stmt = $conn->prepare("SELECT id FROM payment_transactions WHERE team_id = ? AND tournament_id = ? AND payment_id = ?");
-            if (!$stmt) return false;
-            
-            $stmt->bind_param("iis", $team_id, $tournament_id, $payment_id);
-            $stmt->execute();
-            $existing = $stmt->get_result()->fetch_assoc();
-            $stmt->close();
-
-            $json = $payment_details ? json_encode($payment_details) : null;
-
-            if ($existing) {
-                $stmt = $conn->prepare("UPDATE payment_transactions SET status='paid', payment_data=?, updated_at=NOW() WHERE team_id=? AND tournament_id=? AND payment_id=?");
-                if (!$stmt) return false;
-                $stmt->bind_param("siis", $json, $team_id, $tournament_id, $payment_id);
-            } else {
-                $amount = ($payment_details['amount'] ?? 0) / 100;
-                $currency = $payment_details['currency'] ?? 'SAR';
-                if ($amount == 0 && defined('MOYASAR_AMOUNT')) $amount = MOYASAR_AMOUNT / 100;
-                $method = $this->getPaymentMethod($payment_details);
-                $stmt = $conn->prepare("INSERT INTO payment_transactions (team_id, tournament_id, payment_id, amount, currency, status, payment_method, payment_data, created_at, updated_at) VALUES (?, ?, ?, ?, ?, 'paid', ?, ?, NOW(), NOW())");
-                if (!$stmt) return false;
-                $stmt->bind_param("iisdsss", $team_id, $tournament_id, $payment_id, $amount, $currency, $method, $json);
-            }
-            $res = $stmt->execute();
-            $stmt->close();
-            return $res;
-        } catch (Exception $e) {
-            return false;
-        }
-    }
 }
