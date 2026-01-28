@@ -707,3 +707,113 @@ body.admin-page {
 .modal-backdrop {
   z-index: 1060 !important;
 }
+
+/* Dropzone Premium Dark & Gold Style */
+.dropzone-container {
+  border: 2px dashed #444;
+  background: #252525;
+  border-radius: 12px;
+  padding: 30px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  min-height: 180px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.dropzone-container:hover,
+.dropzone-container.dragover {
+  border-color: #F3E6B6;
+  background: #2c2c2c;
+  box-shadow: 0 0 15px rgba(243, 230, 182, 0.1);
+}
+
+.dropzone-container i {
+  font-size: 3rem;
+  color: #666;
+  margin-bottom: 15px;
+  transition: color 0.3s ease;
+}
+
+.dropzone-container:hover i {
+  color: #F3E6B6;
+}
+
+.dropzone-container p {
+  margin: 0;
+  color: #aaa;
+  font-weight: 500;
+}
+
+.dropzone-preview {
+  margin-top: 15px;
+  width: 100%;
+  display: none;
+  text-align: center;
+}
+
+.dropzone-preview img {
+  max-width: 150px;
+  max-height: 150px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  border: 2px solid #333;
+}
+
+.dropzone-remove {
+  background: #ff4d4d;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  line-height: 24px;
+  font-size: 14px;
+  cursor: pointer;
+  margin-left: -12px;
+  transform: translateY(-70px);
+}
+
+/* Admin Input Groups */
+.admin-page .input-group {
+  background: #2c2c2c;
+  border-radius: 25px !important;
+  border: 1px solid #444 !important;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.admin-page .input-group:focus-within {
+  border-color: #F3E6B6 !important;
+  box-shadow: 0 0 10px rgba(243, 230, 182, 0.1);
+}
+
+.admin-page .input-group .form-control {
+  background: transparent !important;
+  border: none !important;
+  color: #fff !important;
+  padding-left: 20px !important;
+  box-shadow: none !important;
+  height: 45px;
+}
+
+.admin-page .input-group .btn {
+  background: transparent !important;
+  border: none !important;
+  color: #888 !important;
+  padding-right: 15px !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+.admin-page .input-group .btn:hover {
+  color: #F3E6B6 !important;
+}
+
+.admin-page .input-group .btn i {
+  font-size: 1.1rem;
+}

@@ -16,6 +16,66 @@
 
 <?php view('partials.navbar'); ?>
 
+<script src="https://unpkg.com/dropzone@5/dist/min/dropzone.min.js"></script>
+<script>
+  function setupDropzone(containerId, inputId, previewId, removeId) {
+    const container = document.getElementById(containerId);
+    const input = document.getElementById(inputId);
+    const preview = document.getElementById(previewId);
+    if(!container || !input || !preview) return;
+
+    const previewImg = preview.querySelector('img');
+    const removeBtn = document.getElementById(removeId);
+
+    container.addEventListener('click', () => input.click());
+
+    container.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      container.classList.add('dragover');
+    });
+
+    container.addEventListener('dragleave', () => {
+      container.classList.remove('dragover');
+    });
+
+    container.addEventListener('drop', (e) => {
+      e.preventDefault();
+      container.classList.remove('dragover');
+      if (e.dataTransfer.files.length) {
+        input.files = e.dataTransfer.files;
+        updatePreview(e.dataTransfer.files[0]);
+      }
+    });
+
+    input.addEventListener('change', () => {
+      if (input.files.length) {
+        updatePreview(input.files[0]);
+      }
+    });
+
+    if(removeBtn) {
+      removeBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        input.value = '';
+        preview.style.display = 'none';
+        container.querySelector('i').style.display = 'block';
+        container.querySelector('p').style.display = 'block';
+      });
+    }
+
+    function updatePreview(file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        previewImg.src = e.target.result;
+        preview.style.display = 'block';
+        container.querySelector('i').style.display = 'none';
+        container.querySelector('p').style.display = 'none';
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+</script>
+
 <div class="container py-5 mt-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
       <h2 class="text-gold mb-0">Manage Sponsors & Collaborate</h2>
@@ -131,7 +191,15 @@
 
           <div class="mb-3">
             <label class="form-label">Logo</label>
-            <input type="file" name="sponsor_logo" class="form-control">
+            <div id="dropzone-edit-<?= $row['sponsor_id'] ?>" class="dropzone-container">
+              <i class="bi bi-cloud-arrow-up" style="<?= $row['sponsor_logo'] ? 'display:none' : '' ?>"></i>
+              <p style="<?= $row['sponsor_logo'] ? 'display:none' : '' ?>">Drag & drop logo here or click to upload</p>
+              <input type="file" name="sponsor_logo" id="file-edit-<?= $row['sponsor_id'] ?>" hidden accept="image/*">
+              <div id="preview-edit-<?= $row['sponsor_id'] ?>" class="dropzone-preview" style="<?= $row['sponsor_logo'] ? 'display:block' : '' ?>">
+                <img src="<?= $row['sponsor_logo'] ? asset('uploads/sponsor/' . $row['sponsor_logo']) : '' ?>" alt="Preview">
+                <button type="button" class="dropzone-remove" id="remove-edit-<?= $row['sponsor_id'] ?>">&times;</button>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -143,6 +211,17 @@
     </div>
   </div>
 </div>
+
+<script>
+  setTimeout(() => {
+    setupDropzone(
+      'dropzone-edit-<?= $row['sponsor_id'] ?>', 
+      'file-edit-<?= $row['sponsor_id'] ?>', 
+      'preview-edit-<?= $row['sponsor_id'] ?>', 
+      'remove-edit-<?= $row['sponsor_id'] ?>'
+    );
+  }, 100);
+</script>
 
               <!-- DELETE MODAL -->
               <div class="modal fade" id="deleteModal<?= $row['sponsor_id'] ?>" tabindex="-1">
@@ -218,7 +297,15 @@
 
           <div class="mb-3">
             <label class="form-label">Logo</label>
-            <input type="file" name="sponsor_logo" class="form-control">
+            <div id="dropzone-add" class="dropzone-container">
+              <i class="bi bi-cloud-arrow-up"></i>
+              <p>Drag & drop logo here or click to upload</p>
+              <input type="file" name="sponsor_logo" id="file-add" hidden accept="image/*">
+              <div id="preview-add" class="dropzone-preview">
+                <img src="" alt="Preview">
+                <button type="button" class="dropzone-remove" id="remove-add">&times;</button>
+              </div>
+            </div>
           </div>
         </div>
         <div class="modal-footer border-0">
@@ -231,15 +318,19 @@
 </div>
 
 <script>
+  // Setup for Add Modal
+  setupDropzone('dropzone-add', 'file-add', 'preview-add', 'remove-add');
+
   document.getElementById('status_select').addEventListener('change', function () {
     const typeWrapper = document.getElementById('type_wrapper');
-
     if (this.value === 'sponsor') {
-      typeWrapper.style.display = 'block'; // Tampilkan kalau sponsor
+      typeWrapper.style.display = 'block';
     } else {
-      typeWrapper.style.display = 'none';  // Sembunyikan kalau collaborate
+      typeWrapper.style.display = 'none';
     }
   });
+
+  // Re-run setup for edit modals just in case (though they have inline scripts now)
 </script>
 
 
