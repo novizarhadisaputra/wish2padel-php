@@ -7,13 +7,11 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Playoff Generator - Wish2Padel</title>
+    <link rel="stylesheet" href="<?= asset('assets/css/style1.css') ?>">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-    <link rel="stylesheet" href="<?= asset('assets/css/stylee.css?v=12') ?>">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
-
-<body style="background-color: #303030">
+<body class="admin-page">
 <?php
 view('partials.navbar');
 $conn = getDBConnection();
@@ -27,8 +25,7 @@ function getDivisionName($conn, $id) {
 }
 ?>
 
-<section class="py-5">
-  <div class="container">
+<div class="container py-5 mt-5">
 
     <!-- Alerts -->
     <?php if(isset($_GET['ok'])): ?>
@@ -43,13 +40,12 @@ function getDivisionName($conn, $id) {
     <?php endif; ?>
 
     <!-- Heading -->
-    <div class="d-flex align-items-center justify-content-between mb-3">
-      <h1 class="h4 text-white m-0"><i class="bi bi-trophy me-2"></i>Playoff Generator</h1>
-
+    <div class="d-flex align-items-center justify-content-between mb-4">
+      <h2 class="text-gold mb-0"><i class="bi bi-trophy me-2"></i>Playoff Generator</h2>
     </div>
 
     <!-- Filter Tahun -->
-    <div class="card shadow-sm border-0 rounded-3 mb-4">
+    <div class="card admin-card shadow-lg mb-4">
       <div class="card-body">
         <form class="row align-items-center" method="get" action="<?= asset('admin/playoff') ?>">
           <div class="col-md-4">
@@ -74,16 +70,16 @@ function getDivisionName($conn, $id) {
     </div>
 
     <!-- Table Tournament x Division -->
-    <div class="card shadow-sm border-0 rounded-3">
-      <div class="card-body">
+    <div class="card admin-card shadow-lg">
+      <div class="card-body p-0">
         <?php if(empty($rows)): ?>
           <div class="alert alert-info border-0 shadow-sm">
             There are no Tournaments/Divisions that meet the year filter yet <strong><?= htmlspecialchars((string)$selected_year) ?></strong>.
           </div>
         <?php else: ?>
         <div class="table-responsive">
-  <table class="table table-hover align-middle">
-    <thead class="table-dark">
+  <table class="table table-dark admin-table table-hover mb-0 align-middle">
+    <thead>
       <tr>
         <th style="width:56px">#</th>
         <th>League</th>
@@ -176,12 +172,12 @@ function getDivisionName($conn, $id) {
             <input type="hidden" name="tournament_id" value="<?= $tournament_id ?>">
             <input type="hidden" name="division" value="<?= $division ?>">
             <?php if ($can_generate): ?>
-              <button class="btn btn-success btn-sm px-3" name="generate_playoff"
+              <button class="btn btn-admin-gold btn-sm px-3" name="generate_playoff"
                 onclick="return confirm('Generate playoffs for <?= htmlspecialchars($tournament) ?> • Division <?= $division ?> — OK?')">
                 <i class="bi bi-trophy me-1"></i> Generate Playoff
               </button>
             <?php else: ?>
-              <button class="btn btn-outline-light text-dark btn-sm px-3" type="button" disabled
+              <button class="btn btn-secondary btn-sm px-3" type="button" disabled
                       title="<?= htmlspecialchars($tooltip) ?>">
                 <i class="bi bi-trophy me-1"></i> Generate Playoff
               </button>
@@ -198,8 +194,7 @@ function getDivisionName($conn, $id) {
       </div>
     </div>
 
-  </div>
-</section>
+</div>
 
 <!-- Scroll to Top Button -->
 <button id="scrollTopBtn" title="Go to top">↑</button>

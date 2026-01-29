@@ -7,80 +7,18 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Overview - Wish2Padel</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <link rel="stylesheet" href="<?= asset('assets/css/stylee.css?v=12') ?>">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  
+    <link rel="stylesheet" href="<?= asset('assets/css/style1.css') ?>">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
 </head>
-<body style="background-color: #303030">
+<body class="admin-page">
 
 <?php view('partials.navbar'); ?>
 
-<style>
-.container-section {
-    max-width: 1100px;
-    margin: 20px auto;
-    padding: 20px;
-}
-.match-card {
-    background: #fff;
-    border-radius: 15px;
-    padding: 20px;
-    margin-bottom: 25px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    animation: fadeIn 0.4s ease-in-out;
-}
-.match-title {
-    font-size: 20px;
-    font-weight: bold;
-    margin-bottom: 10px;
-}
-.table-mini {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 15px;
-}
-.table-mini th, .table-mini td {
-    padding: 8px;
-    border: 1px solid #ddd;
-    text-align: center;
-    font-size: 14px;
-}
-.badge-win { background: #28a745; color:#fff; padding:3px 6px; border-radius:5px; }
-.badge-lose { background: #dc3545; color:#fff; padding:3px 6px; border-radius:5px; }
-@keyframes fadeIn {
-    from { opacity:0; transform:translateY(10px); }
-    to { opacity:1; transform:translateY(0); }
-}
-</style>
-
-<style>
-.filter-form {
-    margin-bottom: 20px;
-    display: flex;
-    gap: 10px;
-    align-items: center;
-}
-.filter-form input {
-    padding: 6px 10px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-}
-.filter-form button {
-    padding: 6px 12px;
-    border: none;
-    border-radius: 8px;
-    background: #007bff;
-    color: #fff;
-    cursor: pointer;
-}
-.filter-form button:hover {
-    background: #0056b3;
-}
-</style>
 
 
-<section class="container text-white my-5">
+
+<div class="container py-5 mt-5">
    <?php
 $conn = getDBConnection();
 $anomaly = "
@@ -138,10 +76,10 @@ $result = $conn->query($anomaly);
 </div>
 <?php endif; ?>
 
-  <h2 class="fw-bold mb-4">📊 Match Overview</h2>
+  <h2 class="text-gold mb-4">📊 Match Overview</h2>
 
  <!-- Filter -->
-<div class="card shadow-sm border-0 rounded-3 mb-4">
+<div class="card admin-card shadow-lg mb-4">
   <div class="card-body">
     <form method="get" class="row g-3 align-items-end" action="<?= asset('admin/pair') ?>">
       <!-- Input Match ID -->
@@ -158,7 +96,7 @@ $result = $conn->query($anomaly);
 
       <!-- Tombol -->
       <div class="col-md-4 d-flex gap-2">
-        <button type="submit" class="btn btn-dark px-4">
+        <button type="submit" class="btn btn-admin-gold px-4">
           <i class="bi bi-search me-1"></i> Filter
         </button>
         <?php if ($filter_match_id): ?>
@@ -177,23 +115,23 @@ $result = $conn->query($anomaly);
   <?php endif; ?>
 
   <?php while ($match = $matches->fetch_assoc()): ?>
-  <div class="card shadow-sm mb-4 rounded-3 overflow-hidden">
+  <div class="card admin-card shadow-lg mb-4 overflow-hidden">
     <!-- Header -->
-    <div class="card-header text-white d-flex justify-content-between align-items-center"
-         style="background: linear-gradient(135deg, #343a40, #495057);">
-      <span><strong>Match <?= $match['match_id'] ?></strong> | 
-        <?= htmlspecialchars($match['team1']) ?> <span class="fw-light">vs</span> <?= htmlspecialchars($match['team2']) ?>
+    <div class="card-header border-0 d-flex justify-content-between align-items-center">
+      <span class="text-gold"><strong>Match <?= $match['match_id'] ?></strong> | 
+        <?= htmlspecialchars($match['team1']) ?> <span class="fw-light text-white">vs</span> <?= htmlspecialchars($match['team2']) ?>
       </span>
-      <button type="button" class="btn-gold" data-bs-toggle="modal" data-bs-target="#editScoresModal<?= $match['match_id'] ?>">
+      <button type="button" class="btn btn-admin-gold btn-sm" data-bs-toggle="modal" data-bs-target="#editScoresModal<?= $match['match_id'] ?>">
         <i class="bi bi-pencil-square me-1"></i> Edit Score
       </button>
     </div>
 
     <!-- Body -->
-    <div class="card-body bg-white">
+    <div class="card-body p-0">
       <!-- Pair Table -->
-      <table class="table table-bordered text-center align-middle mb-4">
-        <thead class="table-light">
+      <div class="table-responsive">
+        <table class="table table-dark admin-table table-hover mb-0 align-middle">
+          <thead>
           <tr>
             <th>Pair #</th>
             <th>Team</th>
@@ -236,9 +174,11 @@ $result = $conn->query($anomaly);
           <?php endwhile; ?>
         </tbody>
       </table>
+      </div>
 
       <!-- Per Team Info -->
-      <div class="row">
+      <div class="p-3">
+        <div class="row">
         <?php
         $res_teams = $conn->query("SELECT mr.*, ti.team_name 
                                    FROM match_results mr
@@ -246,8 +186,8 @@ $result = $conn->query($anomaly);
                                    WHERE mr.match_id = {$match['match_id']}");
         while ($team = $res_teams->fetch_assoc()): ?>
         <div class="col-md-6 mb-3">
-          <div class="border rounded p-3 h-100 bg-light">
-            <h5 class="fw-bold"><?= htmlspecialchars($team['team_name']) ?></h5>
+          <div class="border border-secondary rounded p-3 h-100">
+            <h5 class="text-gold"><?= htmlspecialchars($team['team_name']) ?></h5>
             <p>Status: 
               <?php if ($team['status'] === 'accept'): ?>
                 <span class="badge bg-success">Accepted</span>
@@ -279,19 +219,21 @@ $result = $conn->query($anomaly);
               <button type="submit" name="action" value="reject" class="btn btn-danger btn-sm flex-fill">Reject</button>
             </form>
           </div>
+          </div>
         </div>
         <?php endwhile; ?>
       </div>
+     </div>
     </div>
   </div>
 
   <!-- Modal Edit -->
   <div class="modal fade" id="editScoresModal<?= $match['match_id'] ?>" tabindex="-1">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-      <div class="modal-content shadow rounded-3">
-        <div class="modal-header bg-dark text-white">
-          <h5 class="modal-title">Edit Scores - Match <?= $match['match_id'] ?></h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dark">
+      <div class="modal-content shadow border-0">
+        <div class="modal-header border-0">
+          <h5 class="modal-title text-gold">Edit Scores - Match <?= $match['match_id'] ?></h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body">
           <form method="post" action="<?= asset('admin/pair') ?>">
@@ -308,8 +250,8 @@ $result = $conn->query($anomaly);
 
               $scores_modal = $conn->query("SELECT id,set_number,team_score FROM pair_scores WHERE pair_id={$pm['pair_id']} ORDER BY set_number ASC");
             ?>
-            <div class="mb-3 border rounded p-3 bg-light">
-              <h6>Pair <?= $pm['pair_number'] ?> - <?= htmlspecialchars($pm['team_name']) ?></h6>
+            <div class="mb-4 border border-secondary rounded p-3">
+              <h6 class="text-gold">Pair <?= $pm['pair_number'] ?> - <?= htmlspecialchars($pm['team_name']) ?></h6>
               <p class="small text-muted"><?= implode(", ", $names_modal) ?></p>
               <?php while($sm=$scores_modal->fetch_assoc()): ?>
                 <label class="form-label">Set <?= $sm['set_number'] ?>:</label>
@@ -317,7 +259,10 @@ $result = $conn->query($anomaly);
               <?php endwhile; ?>
             </div>
             <?php endwhile; ?>
-            <button type="submit" class="btn btn-dark">Save Changes</button>
+            <div class="modal-footer border-0">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+              <button type="submit" class="btn btn-admin-gold">Save Changes</button>
+            </div>
           </form>
         </div>
       </div>
@@ -325,7 +270,7 @@ $result = $conn->query($anomaly);
   </div>
 
   <?php endwhile; ?>
-</section>
+</div>
 
 
 <script>

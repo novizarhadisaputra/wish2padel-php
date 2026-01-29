@@ -8,24 +8,23 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Payment Settings - Admin Panel</title>
-    <link rel="stylesheet" href="<?= asset('assets/css/stylee.css?v=12') ?>">
+    <link rel="stylesheet" href="<?= asset('assets/css/style1.css') ?>">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
 </head>
-
-<body style="background-color: #303030">
+<body class="admin-page">
     <?php view('partials.navbar'); ?>
 
-    <div class="container-fluid py-4">
+    <div class="container py-5 mt-5">
         <div class="row justify-content-center">
-            <div class="col-lg-8">
+            <div class="col-lg-10">
                 <!-- Page Header -->
-                <div class="card mb-4" style="background: linear-gradient(135deg, #F3E6B6 0%, #d4c088 100%); border: none;">
-                    <div class="card-body text-center">
-                        <h2 class="card-title mb-2" style="color: #1a1a1a; font-weight: bold;">
+                <div class="card admin-card shadow-lg mb-4 text-center">
+                    <div class="card-body">
+                        <h2 class="text-gold mb-2">
                             <i class="bi bi-credit-card"></i> Payment Settings
                         </h2>
-                        <p class="card-text" style="color: #2d2d2d;">Control tournament registration fees and payment configuration. <strong>Settings here take priority over .env values.</strong></p>
+                        <p class="text-muted">Control tournament registration fees and payment configuration. <strong>Settings here take priority over .env values.</strong></p>
                     </div>
                 </div>
 
@@ -46,12 +45,12 @@
 
                 <?php if (!$table_exists): ?>
                     <!-- Create Table Form -->
-                    <div class="card mb-4">
-                        <div class="card-header bg-warning">
-                            <h5 class="card-title mb-0"><i class="bi bi-exclamation-triangle"></i> Setup Required</h5>
+                    <div class="card admin-card shadow-lg mb-4">
+                        <div class="card-header border-0 bg-warning text-dark">
+                            <h5 class="mb-0"><i class="bi bi-exclamation-triangle"></i> Setup Required</h5>
                         </div>
                         <div class="card-body">
-                            <p>The payment settings table doesn't exist yet. Click the button below to create it with default values.</p>
+                            <p class="text-white">The payment settings table doesn't exist yet. Click the button below to create it with default values.</p>
                             <form method="POST" action="<?= asset('admin/payment_settings') ?>">
                                 <button type="submit" name="create_table" class="btn btn-warning">
                                     <i class="bi bi-database-add"></i> Create Payment Settings Table
@@ -61,9 +60,9 @@
                     </div>
                 <?php else: ?>
                     <!-- Payment Settings Form -->
-                    <div class="card">
-                        <div class="card-header" style="background-color: #1a1a1a; color: #F3E6B6;">
-                            <h5 class="card-title mb-0"><i class="bi bi-gear"></i> Payment Configuration</h5>
+                    <div class="card admin-card shadow-lg">
+                        <div class="card-header border-0">
+                            <h5 class="text-gold mb-0"><i class="bi bi-gear"></i> Payment Configuration</h5>
                         </div>
                         <div class="card-body">
                             <form method="POST" id="paymentSettingsForm" action="<?= asset('admin/payment_settings') ?>">
@@ -102,26 +101,26 @@
 
                                 <!-- Payment Enabled -->
                                 <div class="mb-4">
-                                    <div class="form-check form-switch">
+                                    <div class="form-check form-switch custom-switch">
                                         <input class="form-check-input" type="checkbox" id="payment_enabled" name="payment_enabled"
                                             <?= $payment_enabled ? 'checked' : '' ?>>
                                         <label class="form-check-label fw-bold" for="payment_enabled">
                                             <i class="bi bi-toggle-on"></i> Enable Payment System
                                         </label>
                                     </div>
-                                    <div class="form-text">When disabled, teams can register without payment</div>
+                                    <div class="form-text text-muted">When disabled, teams can register without payment</div>
                                 </div>
 
                                 <!-- Preview -->
-                                <div class="card bg-light mb-4">
+                                <div class="card bg-dark border-secondary mb-4">
                                     <div class="card-body">
-                                        <h6 class="card-title"><i class="bi bi-eye"></i> Preview</h6>
-                                        <p class="card-text mb-1">
+                                        <h6 class="text-gold mb-3"><i class="bi bi-eye"></i> Preview</h6>
+                                        <p class="mb-1 text-white">
                                             <strong>Registration Fee:</strong>
-                                            <span id="preview_amount"><?= $payment_currency ?> <?= number_format($payment_amount, 2) ?></span>
+                                            <span id="preview_amount" class="text-gold"><?= $payment_currency ?> <?= number_format($payment_amount, 2) ?></span>
                                             <small class="text-muted">(<?= number_format($payment_amount * 100) ?> halala for Moyasar)</small>
                                         </p>
-                                        <p class="card-text mb-1">
+                                        <p class="mb-0 text-white">
                                             <strong>Status:</strong>
                                             <span class="badge <?= $payment_enabled ? 'bg-success' : 'bg-secondary' ?>" id="preview_status">
                                                 <?= $payment_enabled ? 'Enabled' : 'Disabled' ?>
@@ -132,7 +131,7 @@
 
                                 <!-- Action Buttons -->
                                 <div class="d-flex gap-2">
-                                    <button type="submit" name="update_settings" class="btn btn-primary">
+                                    <button type="submit" name="update_settings" class="btn btn-admin-gold">
                                         <i class="bi bi-save"></i> Update Payment
                                     </button>
                                     <a href="<?= asset('admin/dashboard') ?>" class="btn btn-secondary">
@@ -144,13 +143,13 @@
                     </div>
 
                     <!-- Current Settings Display -->
-                    <div class="card mt-4">
-                        <div class="card-header bg-info text-white">
-                            <h6 class="card-title mb-0"><i class="bi bi-info-circle"></i> Current Settings</h6>
+                    <div class="card admin-card shadow-lg mt-4">
+                        <div class="card-header border-0 bg-info text-dark">
+                            <h6 class="mb-0"><i class="bi bi-info-circle"></i> Current Settings</h6>
                         </div>
-                        <div class="card-body">
+                        <div class="card-body p-0">
                             <div class="table-responsive">
-                                <table class="table table-sm">
+                                <table class="table table-dark admin-table table-hover mb-0 align-middle">
                                     <thead>
                                         <tr>
                                             <th>Setting</th>
@@ -178,9 +177,7 @@
         </div>
     </div>
 
-    <?php view('partials.footer'); ?>
-
-    <script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
         // Live preview updates
         document.addEventListener('DOMContentLoaded', function() {
             const amountInput = document.getElementById('payment_amount');
@@ -217,8 +214,5 @@
             });
         });
     </script>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
-
 </html>

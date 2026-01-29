@@ -7,32 +7,30 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Manage Transfer Windows - Wish2Padel</title>
-   <link rel="stylesheet" href="<?= asset('assets/css/stylee.css?v=12') ?>">
-      <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="<?= asset('assets/css/style1.css') ?>">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 </head>
-<body style="background-color: #303030">
+<body class="admin-page">
 
 <?php view('partials.navbar'); ?>
 
-<section class="py-5">
-  <div class="container">
+<div class="container py-5 mt-5">
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
-      <h2 class="fw-bold text-white mb-0">Manage Transfer Windows</h2>
-      <button class="btn-gold" data-bs-toggle="modal" data-bs-target="#addModal">
+      <h2 class="text-gold mb-0">Manage Transfer Windows</h2>
+      <button class="btn btn-admin-gold" data-bs-toggle="modal" data-bs-target="#addModal">
         <i class="bi bi-plus-circle me-2"></i> Add Transfer Window
       </button>
     </div>
 
     <!-- Card untuk Table -->
-    <div class="card shadow-lg border-0 rounded-3">
+    <div class="card admin-card shadow-lg">
       <div class="card-body p-0">
         <div class="table-responsive">
-          <table class="table table-hover table-striped align-middle mb-0">
-            <thead style="background:#343a40;">
-              <tr class="text-white">
+          <table class="table table-dark admin-table table-hover mb-0 align-middle">
+            <thead>
+              <tr>
                 <th style="width:60px;">No</th>
                 <th>Start Date</th>
                 <th>End Date</th>
@@ -68,20 +66,18 @@
       </td>
     </tr>
   <?php endwhile; ?>
-</tbody>
-
+            </tbody>
           </table>
         </div>
       </div>
     </div>
-  </div>
-</section>
+</div>
 
 <!-- Reusable Edit Modal -->
 <div class="modal fade" id="editModal" tabindex="-1">
-  <div class="modal-dialog modal-lg modal-dialog-centered" style="margin-top:70px;">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dark">
     <div class="modal-content border-0 shadow-lg">
-      <div class="modal-header text-dark" style="background:#f3e6b6">
+      <div class="modal-header border-0">
         <h5 class="modal-title"><i class="bi bi-pencil-square me-2"></i>Edit Transfer Window</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
@@ -97,9 +93,9 @@
             <input type="datetime-local" name="end_date" id="edit-end" class="form-control">
           </div>
         </div>
-        <div class="modal-footer">
-          <button type="submit" name="update" class="btn-gold rounded-pill px-4">Save</button>
-          <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+        <div class="modal-footer border-0">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" name="update" class="btn btn-admin-gold">Save</button>
         </div>
       </form>
     </div>
@@ -108,22 +104,22 @@
 
 <!-- Reusable Delete Modal -->
 <div class="modal fade" id="deleteModal" tabindex="-1">
-  <div class="modal-dialog modal-lg modal-dialog-centered" style="margin-top:150px;">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dark">
     <div class="modal-content border-0 shadow-lg">
-      <div class="modal-header bg-danger text-white">
-        <h5 class="modal-title"><i class="bi bi-trash me-2"></i>Delete Transfer Window</h5>
+      <div class="modal-header border-0">
+        <h5 class="modal-title text-danger"><i class="bi bi-trash me-2"></i>Delete Transfer Window</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
         <p class="mb-0">Are you sure you want to delete this transfer window?</p>
       </div>
-      <div class="modal-footer">
-        <form method="POST" id="delete-form" action="<?= asset('admin/windows') ?>">
+      <div class="modal-footer border-0">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <form method="POST" id="delete-form" action="<?= asset('admin/windows') ?>" class="d-inline">
           <input type="hidden" name="id" id="delete-id">
           <input type="hidden" name="delete" value="1">
-          <button type="submit" class="btn btn-danger rounded-pill px-4">Delete</button>
+          <button type="submit" class="btn btn-danger">Delete</button>
         </form>
-        <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
       </div>
     </div>
   </div>
@@ -132,9 +128,9 @@
 
 <!-- Add Modal -->
 <div class="modal fade" id="addModal" tabindex="-1">
-  <div class="modal-dialog modal-lg modal-dialog-centered" style="margin-top:70px; margin-bottom:50px">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dark">
     <div class="modal-content border-0 shadow-lg">
-      <div class="modal-header text-dark" style="background:#f3e6b6">
+      <div class="modal-header border-0">
         <h5 class="modal-title"><i class="bi bi-plus-circle me-2"></i>Add Transfer Window</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
@@ -149,9 +145,9 @@
             <input type="datetime-local" name="end_date" class="form-control" required>
           </div>
         </div>
-        <div class="modal-footer">
-          <button type="submit" name="add" class="btn-gold rounded-pill px-4">Save</button>
-          <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+        <div class="modal-footer border-0">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" name="add" class="btn btn-admin-gold">Save</button>
         </div>
       </form>
     </div>

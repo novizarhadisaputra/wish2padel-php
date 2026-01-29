@@ -7,33 +7,32 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>League Zone - Wish2Padel</title>
-  <link rel="stylesheet" href="<?= asset('assets/css/stylee.css?v=12') ?>">
+    <link rel="stylesheet" href="<?= asset('assets/css/style1.css') ?>">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
 </head>
-<body style="background-color: #303030">
+<body class="admin-page">
 
 <?php view('partials.navbar'); ?>
 
 <!-- ================= MANAGE LEAGUE ================= -->
-<section class="p-4">
-  <div class="container">
+<div class="container py-5 mt-5">
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
-      <h2 class="fw-bold text-white">
-        <i class="bi bi-trophy-fill text-warning me-2"></i> Manage League
+      <h2 class="text-gold mb-0">
+        <i class="bi bi-trophy me-2"></i> Manage League
       </h2>
-      <button class="btn-gold shadow-sm rounded-pill" data-bs-toggle="modal" data-bs-target="#addLeagueModal">
+      <button class="btn btn-admin-gold" data-bs-toggle="modal" data-bs-target="#addLeagueModal">
         <i class="bi bi-plus-circle me-1"></i> Add League
       </button>
     </div>
 
     <!-- Table Card -->
-    <div class="card shadow border-0 rounded-3">
-      <div class="card-body">
+    <div class="card admin-card shadow-lg mb-5">
+      <div class="card-body p-0">
         <div class="table-responsive">
-          <table class="table table-hover align-middle">
-            <thead class="table-success">
+          <table class="table table-dark admin-table table-hover mb-0 align-middle">
+            <thead>
               <tr>
                 <th>Name</th>
                 <th>Description</th>
@@ -44,8 +43,8 @@
             <tbody>
   <?php while($row = $leagues->fetch_assoc()): ?>
     <tr>
-      <td class="fw-semibold text-dark"><?= htmlspecialchars($row['name']) ?></td>
-      <td class="text-muted"><?= htmlspecialchars($row['deskripsi'] ?? '-') ?></td>
+      <td class="fw-semibold"><?= htmlspecialchars($row['name']) ?></td>
+      <td><?= htmlspecialchars($row['deskripsi'] ?? '-') ?></td>
       <td>
         <span class="badge bg-info text-dark px-3 py-2 rounded-pill">
           <?= $row['date'] ?>
@@ -77,9 +76,9 @@ while($row = $leagues->fetch_assoc()):
 ?>
     <!-- Edit League Modal -->
     <div class="modal fade" id="editLeagueModal<?= $leagueId ?>" tabindex="-1">
-      <div class="modal-dialog modal-dialog-centered" style="margin-top:70px">
-        <div class="modal-content shadow-lg rounded-4 border-0">
-          <div class="modal-header bg-warning text-dark rounded-top-4">
+      <div class="modal-dialog modal-dialog-centered modal-dark">
+        <div class="modal-content shadow-lg border-0">
+          <div class="modal-header border-0">
             <h5 class="modal-title"><i class="bi bi-pencil-square me-2"></i>Update League</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
           </div>
@@ -109,9 +108,9 @@ while($row = $leagues->fetch_assoc()):
               </div>
             </div>
 
-            <div class="modal-footer">
-              <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-              <button type="submit" name="edit_league" class="btn-gold">Save Changes</button>
+            <div class="modal-footer border-0">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+              <button type="submit" name="edit_league" class="btn btn-admin-gold">Save Changes</button>
             </div>
           </form>
         </div>
@@ -120,11 +119,11 @@ while($row = $leagues->fetch_assoc()):
 
     <!-- Delete League Modal -->
     <div class="modal fade" id="deleteLeagueModal<?= $leagueId ?>" tabindex="-1">
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content shadow-lg rounded-4 border-0">
-          <div class="modal-header bg-danger text-white rounded-top-4">
-            <h5 class="modal-title"><i class="bi bi-exclamation-triangle-fill me-2"></i>Confirm Delete</h5>
-            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      <div class="modal-dialog modal-dialog-centered modal-dark">
+        <div class="modal-content shadow-lg border-0">
+          <div class="modal-header border-0">
+            <h5 class="modal-title text-danger"><i class="bi bi-exclamation-triangle me-2"></i>Confirm Delete</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
           </div>
           <form method="POST" action="<?= asset('admin/tournament') ?>">
             <div class="modal-body">
@@ -133,8 +132,8 @@ while($row = $leagues->fetch_assoc()):
               </p>
               <input type="hidden" name="id" value="<?= $leagueId ?>">
             </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+            <div class="modal-footer border-0">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
               <button type="submit" name="delete_league" class="btn btn-danger">Delete</button>
             </div>
           </form>
@@ -163,20 +162,20 @@ while($row = $tournaments->fetch_assoc()) {
   <div class="container">
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
-      <h2 class="fw-bold text-white">
-        <i class="bi bi-geo-alt-fill text-primary me-2"></i> Manage Zone
+      <h2 class="text-gold mb-0">
+        <i class="bi bi-geo-alt me-2"></i> Manage Zone
       </h2>
-      <button class="btn-gold shadow-sm rounded-pill" data-bs-toggle="modal" data-bs-target="#addTournamentModal">
+      <button class="btn btn-admin-gold" data-bs-toggle="modal" data-bs-target="#addTournamentModal">
         <i class="bi bi-plus-circle me-1"></i> Add Zone
       </button>
     </div>
 
     <!-- Table -->
-    <div class="card shadow border-0 rounded-3">
-      <div class="card-body">
+    <div class="card admin-card shadow-lg mb-5">
+      <div class="card-body p-0">
         <div class="table-responsive">
-          <table class="table table-hover align-middle">
-            <thead class="table-light">
+          <table class="table table-dark admin-table table-hover mb-0 align-middle">
+            <thead>
               <tr>
                 <th>Name</th>
                 <th>League</th>
@@ -222,9 +221,9 @@ while($row = $tournaments->fetch_assoc()) {
           <?php foreach($tournaments_list as $row): $id = (int)$row['id']; ?>
             <!-- Edit Modal -->
             <div class="modal fade" id="editTournamentModal<?= $id ?>" tabindex="-1">
-              <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content shadow-lg border-0 rounded-4">
-                  <div class="modal-header bg-warning text-dark rounded-top-4">
+              <div class="modal-dialog modal-dialog-centered modal-dark">
+                <div class="modal-content shadow-lg border-0">
+                  <div class="modal-header border-0">
                     <h5 class="modal-title"><i class="bi bi-pencil-square me-2"></i>Update Zone</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                   </div>
@@ -255,9 +254,9 @@ while($row = $tournaments->fetch_assoc()) {
                         <label>End Date</label>
                       </div>
                     </div>
-                    <div class="modal-footer">
-                      <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-                      <button type="submit" name="edit_tournament" class="btn-gold">Save Changes</button>
+                    <div class="modal-footer border-0">
+                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                      <button type="submit" name="edit_tournament" class="btn btn-admin-gold">Save Changes</button>
                     </div>
                   </form>
                 </div>
@@ -298,22 +297,22 @@ while($row = $tournaments->fetch_assoc()) {
   <div class="container">
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
-      <h2 class="fw-bold text-white">
-        <i class="bi bi-grid-3x3-gap-fill text-warning me-2"></i> Manage Division
+      <h2 class="text-gold mb-0">
+        <i class="bi bi-grid-3x3-gap me-2"></i> Manage Division
       </h2>
-      <button class="btn-gold shadow-sm rounded-pill" data-bs-toggle="modal" data-bs-target="#addDivisionModal">
+      <button class="btn btn-admin-gold" data-bs-toggle="modal" data-bs-target="#addDivisionModal">
         <i class="bi bi-plus-circle me-1"></i> Add Division
       </button>
     </div>
 
     <!-- Table Card -->
-    <div class="card shadow border-0 rounded-3">
-      <div class="card-body">
+    <div class="card admin-card shadow-lg mb-5">
+      <div class="card-body p-0">
         <div class="table-responsive">
-          <table class="table table-hover align-middle">
-            <thead class="table-success">
+          <table class="table table-dark admin-table table-hover mb-0 align-middle">
+            <thead>
               <tr>
-                <th>Division Number</th>
+                <th>Division Rank</th>
                 <th>Name</th>
                 <th>Gender</th>
                 <th class="text-center">Actions</th>
@@ -326,9 +325,13 @@ while($row = $tournaments->fetch_assoc()) {
       $rows[] = $row;
   ?>
     <tr>
-      <td class="fw-semibold text-dark"><?= $row['id'] ?></td>
-      <td class="text-muted"><?= htmlspecialchars($row['division_name']) ?></td>
-      <td><span class="badge bg-<?= ($row['gender']??'Men')=='Women'?'danger':(($row['gender']??'')=='Mixed'?'success':'primary') ?>"><?= htmlspecialchars($row['gender']??'Men') ?></span></td>
+      <td class="fw-semibold"><?= htmlspecialchars($row['id']) ?></td>
+      <td><?= htmlspecialchars($row['division_name']) ?></td>
+      <td>
+        <span class="badge rounded-pill px-3 py-2 bg-<?= ($row['gender']??'Men')=='Women'?'danger':(($row['gender']??'')=='Mixed'?'success':'primary') ?>">
+          <?= htmlspecialchars($row['gender']??'Men') ?>
+        </span>
+      </td>
       <td class="text-center">
         <button class="btn btn-sm btn-outline-warning me-1 rounded-circle" data-bs-toggle="modal" data-bs-target="#editDivisionModal<?= $row['id'] ?>" title="Edit">
           <i class="bi bi-pencil"></i>
@@ -346,9 +349,9 @@ while($row = $tournaments->fetch_assoc()) {
 
 <!-- Edit Division Modal -->
 <div class="modal fade" id="editDivisionModal<?= $id ?>" tabindex="-1">
-  <div class="modal-dialog modal-dialog-centered" style="margin-top:70px">
-    <div class="modal-content shadow-lg rounded-4 border-0">
-      <div class="modal-header bg-warning text-dark rounded-top-4">
+  <div class="modal-dialog modal-dialog-centered modal-dark">
+    <div class="modal-content shadow-lg border-0">
+      <div class="modal-header border-0">
         <h5 class="modal-title"><i class="bi bi-pencil-square me-2"></i>Update Division</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
@@ -380,9 +383,9 @@ while($row = $tournaments->fetch_assoc()) {
           </div>
         </div>
 
-        <div class="modal-footer">
-          <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-          <button type="submit" name="edit_division" class="btn-gold">Save Changes</button>
+        <div class="modal-footer border-0">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" name="edit_division" class="btn btn-admin-gold">Save Changes</button>
         </div>
       </form>
     </div>
@@ -391,11 +394,11 @@ while($row = $tournaments->fetch_assoc()) {
 
 <!-- Delete Division Modal -->
 <div class="modal fade" id="deleteDivisionModal<?= $id ?>" tabindex="-1">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content shadow-lg rounded-4 border-0">
-      <div class="modal-header bg-danger text-white rounded-top-4">
-        <h5 class="modal-title"><i class="bi bi-exclamation-triangle-fill me-2"></i>Confirm Delete</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+  <div class="modal-dialog modal-dialog-centered modal-dark">
+    <div class="modal-content shadow-lg border-0">
+      <div class="modal-header border-0">
+        <h5 class="modal-title text-danger"><i class="bi bi-exclamation-triangle-fill me-2"></i>Confirm Delete</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <form method="POST" action="<?= asset('admin/tournament') ?>">
         <div class="modal-body">
@@ -404,8 +407,8 @@ while($row = $tournaments->fetch_assoc()) {
           </p>
           <input type="hidden" name="id" value="<?= $id ?>">
         </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+        <div class="modal-footer border-0">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
           <button type="submit" name="delete_division" class="btn btn-danger">Delete</button>
         </div>
       </form>
@@ -425,10 +428,10 @@ while($row = $tournaments->fetch_assoc()) {
 
 <!-- Add League Modal -->
 <div class="modal fade" id="addLeagueModal" tabindex="-1">
-  <div class="modal-dialog modal-dialog-centered" style="margin-top:70px">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Add League</h5>
+  <div class="modal-dialog modal-dialog-centered modal-dark">
+    <div class="modal-content border-0">
+      <div class="modal-header border-0">
+        <h5 class="modal-title text-gold">Add League</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <form method="POST" action="<?= asset('admin/tournament') ?>">
@@ -446,9 +449,9 @@ while($row = $tournaments->fetch_assoc()) {
             <input type="number" name="date" class="form-control" placeholder="e.g., 2025" required>
           </div>
         </div>
-        <div class="modal-footer">
+        <div class="modal-footer border-0">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-          <button type="submit" name="add_league" class="btn-gold">Add League</button>
+          <button type="submit" name="add_league" class="btn btn-admin-gold">Add League</button>
         </div>
       </form>
     </div>
@@ -458,10 +461,10 @@ while($row = $tournaments->fetch_assoc()) {
 
 <!-- Add Tournament Modal -->
 <div class="modal fade" id="addTournamentModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered" style="margin-top:100px">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Add Zone</h5>
+    <div class="modal-dialog modal-dialog-centered modal-dark">
+        <div class="modal-content border-0">
+            <div class="modal-header border-0">
+                <h5 class="modal-title text-gold">Add Zone</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <form method="POST" action="<?= asset('admin/tournament') ?>">
@@ -502,9 +505,9 @@ while($row = $tournaments->fetch_assoc()) {
                         <input type="date" name="end_date" class="form-control" required>
                     </div>
                 </div>
-                <div class="modal-footer">
+                <div class="modal-footer border-0">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" name="add_tournament" class="btn-gold">Add Zone</button>
+                    <button type="submit" name="add_tournament" class="btn btn-admin-gold">Add Zone</button>
                 </div>
             </form>
         </div>
@@ -513,10 +516,10 @@ while($row = $tournaments->fetch_assoc()) {
 
 <!-- Add Division Modal -->
 <div class="modal fade" id="addDivisionModal" tabindex="-1">
-  <div class="modal-dialog modal-dialog-centered" style="margin-top:70px">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Add Division</h5>
+  <div class="modal-dialog modal-dialog-centered modal-dark">
+    <div class="modal-content border-0">
+      <div class="modal-header border-0">
+        <h5 class="modal-title text-gold">Add Division</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <form method="POST" action="<?= asset('admin/tournament') ?>">
@@ -542,9 +545,9 @@ while($row = $tournaments->fetch_assoc()) {
           </div>
 
         </div>
-        <div class="modal-footer">
+        <div class="modal-footer border-0">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-          <button type="submit" name="add_division" class="btn-gold">Add Division</button>
+          <button type="submit" name="add_division" class="btn btn-admin-gold">Add Division</button>
         </div>
       </form>
     </div>

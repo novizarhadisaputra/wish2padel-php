@@ -18,7 +18,12 @@ nav .navbar-brand {
 }
 
 nav .nav-item {
-  margin-left: 20px;
+  margin-left: 40px;
+}
+
+.navbar-brand img {
+  height: 120px;
+  width: auto;
 }
 
 nav .navbar-nav>li>a.nav-link {
@@ -158,6 +163,45 @@ nav .navbar-nav>li>a.nav-link:hover::after {
 .btn-gold:active {
   transform: translateY(1px);
   box-shadow: 0 2px 10px rgba(255, 215, 0, 0.4);
+}
+
+/* Standard Dropdown Menu (Dark Theme for Navbar) */
+.navbar .dropdown-menu:not(.mega-dropdown) {
+  background-color: #1a1a1a;
+  border: 1px solid #d4af37;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+  margin-top: 10px;
+  padding: 10px 0;
+  overflow: hidden;
+}
+
+.navbar .dropdown-menu:not(.mega-dropdown) .dropdown-item {
+  color: #fff !important;
+  padding: 10px 25px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.navbar .dropdown-menu:not(.mega-dropdown) .dropdown-item:hover {
+  background-color: #d4af37 !important;
+  color: #1a1a1a !important;
+  padding-left: 30px;
+}
+
+.navbar .dropdown-menu:not(.mega-dropdown) .dropdown-divider {
+  border-top: 1px solid rgba(212, 175, 55, 0.2);
+  margin: 8px 0;
+}
+
+/* For mobile view */
+@media (max-width: 991.98px) {
+  .navbar .dropdown-menu:not(.mega-dropdown) {
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding-left: 20px;
+  }
 }
 
 /* Modal Dark Theme */
@@ -600,6 +644,10 @@ body.admin-page {
   overflow: hidden;
 }
 
+.admin-page .text-muted {
+  color: rgba(255, 255, 255, 0.5) !important;
+}
+
 .card.admin-card .card-header {
   background-color: #1e1e1e;
   border-bottom: 1px solid #333;
@@ -816,4 +864,48 @@ body.admin-page {
 
 .admin-page .input-group .btn i {
   font-size: 1.1rem;
+}
+
+/* Empty State Components */
+.empty-state-container {
+  padding: 40px 20px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 12px;
+  border: 1px dashed rgba(243, 230, 182, 0.1);
+  margin: 20px;
+  transition: all 0.3s ease;
+}
+
+.empty-state-container:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(243, 230, 182, 0.3);
+}
+
+.empty-state-icon i {
+  display: inline-block;
+  animation: floatEmptyState 3s ease-in-out infinite;
+}
+
+@keyframes floatEmptyState {
+  0% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+.empty-state-title {
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.empty-state-description {
+  font-size: 0.95rem;
+  line-height: 1.5;
 }

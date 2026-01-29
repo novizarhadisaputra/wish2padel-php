@@ -5,11 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manage Penalties - Admin Dashboard</title>
     <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap Icons -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
-    <!-- Custom CSS -->
     <link rel="stylesheet" href="<?= asset('assets/css/style1.css') ?>">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
 </head>
 <body class="admin-page">
 
@@ -52,7 +50,7 @@
                                         <form method="POST" action="/admin/penalties" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this penalty?');">
                                             <input type="hidden" name="penalty_id" value="<?= $row['id'] ?>">
                                             <input type="hidden" name="delete_penalty" value="1">
-                                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger rounded-circle" title="Delete">
                                                 <i class="bi bi-trash"></i>
                                             </button>
                                         </form>
@@ -73,10 +71,10 @@
 
 <!-- Add Penalty Modal -->
 <div class="modal fade" id="addPenaltyModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered mt-5 modal-dark">
-        <div class="modal-content border-0 shadow-lg rounded-3">
+    <div class="modal-dialog modal-dialog-centered modal-dark">
+        <div class="modal-content border-0 shadow-lg">
             <div class="modal-header border-0">
-                <h5 class="modal-title">Add New Penalty</h5>
+                <h5 class="modal-title text-gold">Add New Penalty</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form method="POST" action="/admin/penalties">
@@ -128,8 +126,8 @@
                     </div>
                 </div>
                 <div class="modal-footer border-0">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-admin-gold">Save Penalty</button>
+                    <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-admin-gold px-4">Save Penalty</button>
                 </div>
             </form>
         </div>

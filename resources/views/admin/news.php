@@ -7,33 +7,32 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>News - Wish2Padel</title>
-   <link rel="stylesheet" href="<?= asset('assets/css/stylee.css?v=12') ?>">
+   <link rel="stylesheet" href="<?= asset('assets/css/style1.css') ?>">
       <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
-<body style="background-color: #303030">
+<body class="admin-page">
 
 <?php view('partials.navbar'); ?>
 
-<section class="py-5">
-  <div class="container">
+<div class="container py-5 mt-5">
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
-      <h2 class="fw-bold text-white mb-0">Manage Blog / News</h2>
-      <button class="btn-gold" data-bs-toggle="modal" data-bs-target="#addModal">
+      <h2 class="text-gold mb-0">Manage Blog / News</h2>
+      <button class="btn btn-admin-gold" data-bs-toggle="modal" data-bs-target="#addModal">
         <i class="bi bi-plus-circle me-2"></i> Add News
       </button>
     </div>
 
     <!-- Card untuk Table -->
-    <div class="card shadow-lg border-0 rounded-3">
+    <div class="card admin-card shadow-lg">
      
       <div class="card-body p-0">
         <div class="table-responsive">
-          <table class="table table-hover table-striped align-middle mb-0">
-            <thead style="background:#343a40;">
-              <tr class="text-white">
+          <table class="table table-dark admin-table table-hover mb-0 align-middle">
+            <thead>
+              <tr>
                 <th style="width:60px;">No</th>
                 <th>Title</th>
                 <th style="width:100px;">Image</th>
@@ -46,7 +45,8 @@
 <?php 
 $no=1; 
 $modalData = []; // <-- simpan data untuk modal
-while($row = $news->fetch_assoc()):
+if ($news && method_exists($news, 'fetch_assoc')):
+  while($row = $news->fetch_assoc()):
 ?>
   <tr>
     <td><?= $no++ ?></td>
@@ -60,32 +60,34 @@ while($row = $news->fetch_assoc()):
     </td>
     <td><?= htmlspecialchars($row['highlight']) ?></td>
     <td>
-      <span class="badge bg-light text-dark">
+      <span class="badge bg-info text-dark">
         <?= date("d M Y H:i", strtotime($row['created_at'])) ?>
       </span>
     </td>
     <td>
-      <button class="btn btn-sm btn-outline-warning me-1" data-bs-toggle="modal" data-bs-target="#editModal<?= $row['id'] ?>">
-        <i class="bi bi-pencil-square"></i>
+      <button class="btn btn-sm btn-outline-warning me-1 rounded-circle" data-bs-toggle="modal" data-bs-target="#editModal<?= $row['id'] ?>" title="Edit">
+        <i class="bi bi-pencil"></i>
       </button>
-      <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal<?= $row['id'] ?>">
+      <button class="btn btn-sm btn-outline-danger rounded-circle" data-bs-toggle="modal" data-bs-target="#deleteModal<?= $row['id'] ?>" title="Delete">
         <i class="bi bi-trash"></i>
       </button>
     </td>
   </tr>
-<?php 
-$modalData[] = $row; // simpan data
-endwhile; 
-?>
+  <?php 
+    $modalData[] = $row; // simpan data
+    endwhile; 
+  else: ?>
+    <tr><td colspan="6" class="text-center py-4 text-muted">No news found.</td></tr>
+  <?php endif; ?>
 </tbody>
 
           </table>
           <?php foreach($modalData as $row): ?>
 <!-- Edit Modal -->
 <div class="modal fade" id="editModal<?= $row['id'] ?>" tabindex="-1">
-  <div class="modal-dialog modal-lg modal-dialog-centered" style="margin-top:150px; margin-bottom:50px">
-    <div class="modal-content border-0 shadow-lg">
-      <div class="modal-header text-dark" style="background:#f3e6b6">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dark">
+    <div class="modal-content shadow-lg border-0">
+      <div class="modal-header border-0">
         <h5 class="modal-title"><i class="bi bi-pencil-square me-2"></i>Edit News</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
@@ -109,9 +111,9 @@ endwhile;
             <input type="file" name="image" class="form-control">
           </div>
         </div>
-        <div class="modal-footer">
-          <button type="submit" name="update" class="btn-gold rounded-pill px-4">Save</button>
-          <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+        <div class="modal-footer border-0">
+          <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" name="update" class="btn btn-admin-gold px-4">Save Changes</button>
         </div>
       </form>
     </div>
@@ -120,18 +122,18 @@ endwhile;
 
 <!-- Delete Modal -->
 <div class="modal fade" id="deleteModal<?= $row['id'] ?>" tabindex="-1">
-  <div class="modal-dialog modal-lg modal-dialog-centered" style="margin-top:150px; margin-bottom:50px">
-    <div class="modal-content border-0 shadow-lg">
-      <div class="modal-header bg-danger text-white">
-        <h5 class="modal-title"><i class="bi bi-trash me-2"></i>Delete News</h5>
+  <div class="modal-dialog modal-dialog-centered modal-dark">
+    <div class="modal-content shadow-lg border-0">
+      <div class="modal-header border-0">
+        <h5 class="modal-title text-danger"><i class="bi bi-trash me-2"></i>Delete News</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
         <p class="mb-0">Are you sure you want to delete <b><?= htmlspecialchars($row['title']) ?></b>?</p>
       </div>
-      <div class="modal-footer">
-        <button type="submit" form="deleteForm<?= $row['id'] ?>" class="btn btn-danger rounded-pill px-4">Delete</button>
-        <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+      <div class="modal-footer border-0">
+        <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Cancel</button>
+        <button type="submit" form="deleteForm<?= $row['id'] ?>" class="btn btn-danger px-4">Delete</button>
       </div>
       <form method="POST" id="deleteForm<?= $row['id'] ?>" action="<?= asset('admin/news') ?>">
         <input type="hidden" name="id" value="<?= $row['id'] ?>">
@@ -145,15 +147,14 @@ endwhile;
         </div>
       </div>
     </div>
-  </div>
-</section>
+</div>
 
 
 <div class="modal fade" id="addModal" tabindex="-1">
-    <div class="modal-dialog modal-lg modal-dialog-centered" style="margin-top:150px; margin-bottom:50px">
-        <div class="modal-content">
-            <div class="modal-header" style="background:#bfa14a; color:#fff;">
-                <h5 class="modal-title">Add News</h5>
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dark">
+        <div class="modal-content border-0">
+            <div class="modal-header border-0">
+                <h5 class="modal-title text-gold">Add News</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <form method="POST" enctype="multipart/form-data" action="<?= asset('admin/news') ?>">
@@ -175,9 +176,9 @@ endwhile;
                         <input type="file" name="image" class="form-control">
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="submit" name="add" class="btn-gold">Save</button>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" name="add" class="btn btn-admin-gold px-4">Save News</button>
                 </div>
             </form>
         </div>

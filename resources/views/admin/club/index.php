@@ -4,35 +4,28 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Club - Wish2Padel</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="<?= asset('assets/css/style1.css') ?>">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
-    <link rel="stylesheet" href="<?= asset('assets/css/stylee.css?v=12') ?>">
-    <link rel="icon" type="image/png" sizes="32x32" href="<?= getSiteLogo() ?>">
-    <link rel="icon" type="image/png" sizes="16x16" href="<?= getSiteLogo() ?>">
-    <link rel="apple-touch-icon" href="<?= getSiteLogo() ?>">
-  </head>
-  <body style="background-color: #303030">
+</head>
+<body class="admin-page">
     <?php view('partials.navbar'); ?>
 
-    <section class="container py-5">
+<div class="container py-5 mt-5">
   <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="fw-bold text-white mb-0">
-      <i class="bi bi-building me-2 text-warning"></i> Manage Club
+    <h2 class="text-gold mb-0">
+      <i class="bi bi-building me-2"></i> Manage Clubs
     </h2>
-    <a href="<?= asset('admin/club/create') ?>" class="btn-gold" style="text-decoration:none">
+    <a href="<?= asset('admin/club/create') ?>" class="btn btn-admin-gold">
       <i class="bi bi-plus-circle me-2"></i> Add Club
     </a>
   </div>
 
-  <div class="card shadow border-0 rounded-3">
-    <div class="card-header py-3" style="background:#212529;">
-      <h5 class="mb-0 text-white"><i class="bi bi-list-ul me-2"></i> Club List</h5>
-    </div>
+  <div class="card admin-card shadow-lg">
     <div class="card-body p-0">
       <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0">
-          <thead style="background:#343a40; color:#fff;">
+        <table class="table table-dark admin-table table-hover mb-0 align-middle">
+          <thead>
             <tr>
               <th>#</th>
               <th>Club Name</th>
@@ -105,9 +98,10 @@
         <a class="page-link" href="?page=<?= $page+1 ?>">Next</a>
       </li>
       <?php endif; ?>
-    </ul>
-  </nav>
-</section>
+      </div>
+    </div>
+  </div>
+</div>
 
 
     <!-- Scroll to Top Button -->

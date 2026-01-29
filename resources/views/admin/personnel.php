@@ -71,7 +71,19 @@
                             <?php endwhile; ?>
                         <?php else: ?>
                             <tr>
-                                <td colspan="6" class="text-center py-4">No personnel found.</td>
+                                <td colspan="6" class="p-0">
+                                    <?php 
+                                        $icon = 'bi-people';
+                                        $title = 'No Personnel Found';
+                                        $description = 'No team personnel match your search criteria. Try a different search or check back later.';
+                                        view('partials.empty_state', [
+                                            'icon' => $icon,
+                                            'title' => $title,
+                                            'description' => $description,
+                                            'extra_class' => 'border-0 m-0'
+                                        ]); 
+                                    ?>
+                                </td>
                             </tr>
                         <?php endif; ?>
                     </tbody>

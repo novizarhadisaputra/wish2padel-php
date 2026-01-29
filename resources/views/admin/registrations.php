@@ -9,18 +9,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Registration - Wish2Padel</title>
 
-  <link rel="stylesheet" href="<?= asset('assets/css/stylee.css?v=12') ?>">
+  <link rel="stylesheet" href="<?= asset('assets/css/style1.css') ?>">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet"
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
 </head>
-
-<body style="background-color: #303030">
+<body class="admin-page">
 
   <?php view('partials.navbar'); ?>
-  <section class="container py-5">
-    <h2 class="fw-bold mb-3 text-white">
-      <i class="bi bi-credit-card-2-front me-2 text-white"></i> Manage Registration Payments
+  <div class="container py-5 mt-5">
+    <h2 class="text-gold mb-4">
+      <i class="bi bi-credit-card-2-front me-2"></i> Manage Registration Payments
     </h2>
 
     <!-- Search bar -->
@@ -37,11 +35,12 @@
     </div>
 
     <!-- Table Card -->
-    <div class="card shadow-sm">
-      <div class="card-body table-responsive">
-        <table class="table table-striped table-hover align-middle">
-          <thead class="table-dark">
-            <tr>
+    <div class="card admin-card shadow-lg">
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-dark admin-table table-hover mb-0 align-middle">
+            <thead>
+              <tr>
               <th scope="col">Team</th>
               <th scope="col">Team Created</th>
               <th scope="col">Payment ID</th>
@@ -83,9 +82,10 @@
             <?php endforeach; ?>
           </tbody>
         </table>
+        </div>
       </div>
     </div>
-  </section>
+  </div>
 
 
   <script>

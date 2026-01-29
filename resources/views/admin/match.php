@@ -7,22 +7,19 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Match - Wish2Padel</title>
+    <link rel="stylesheet" href="<?= asset('assets/css/style1.css') ?>">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-    <link rel="stylesheet" href="<?= asset('assets/css/stylee.css?v=12') ?>">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
 </head>
-<body style="background-color: #303030">
+<body class="admin-page">
 
 <?php view('partials.navbar'); ?>
 
 <!-- ================= MANAGE MATCHES ================= -->
-<section class="py-5">
-  <div class="container">
+<div class="container py-5 mt-5">
 
     <!-- Filter Tahun -->
-    <div class="card shadow-sm border-0 rounded-3 mb-4">
+    <div class="card admin-card shadow-lg mb-4">
       <div class="card-body">
         <form class="row align-items-center" method="get" action="<?= asset('admin/matches') ?>">
           <div class="col-md-4">
@@ -42,7 +39,7 @@
     <?php if($selected_year && !$matches_exist): ?>
     <div class="text-end mb-4">
       <form method="post" action="<?= asset('admin/matches') ?>?year=<?= $selected_year ?>">
-        <button class="btn btn-dark shadow-sm rounded px-4" name="add_match">
+        <button class="btn btn-admin-gold shadow-sm px-4" name="add_match">
           <i class="bi bi-shuffle me-1"></i> Generate All Matches
         </button>
       </form>
@@ -51,11 +48,11 @@
 
     <!-- Table Matches -->
     <?php if($matches_exist): ?>
-    <div class="card shadow-sm border-0 rounded-3">
-  <div class="card-body">
+    <div class="card admin-card shadow-lg">
+  <div class="card-body p-0">
     <div class="table-responsive">
-      <table class="table table-hover align-middle">
-        <thead class="table-dark">
+      <table class="table table-dark admin-table table-hover mb-0 align-middle">
+        <thead>
           <tr>
             <th>#</th>
             <th>League</th>
@@ -111,7 +108,7 @@
             </td>
             <td class="text-center">
               <?php if(in_array($row['status'], ['scheduled','pending'])): ?>
-                <button class="btn btn-sm btn-outline-dark rounded-circle" data-bs-toggle="modal" data-bs-target="#editModal<?= $row['id'] ?>" title="Edit">
+                <button class="btn btn-sm btn-outline-warning rounded-circle" data-bs-toggle="modal" data-bs-target="#editModal<?= $row['id'] ?>" title="Edit">
                   <i class="bi bi-pencil"></i>
                 </button>
                 <button class="btn btn-sm btn-outline-danger rounded-circle ms-1" data-bs-toggle="modal" data-bs-target="#noShowModal<?= $row['id'] ?>" title="Report No Show">
@@ -132,10 +129,10 @@
 </div>
 <?php foreach($modalData as $row): ?>
 <div class="modal fade" id="noShowModal<?= $row['id'] ?>" tabindex="-1">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header bg-danger text-white">
-        <h5 class="modal-title">Report No Show</h5>
+  <div class="modal-dialog modal-dialog-centered modal-dark">
+    <div class="modal-content border-0">
+      <div class="modal-header border-0">
+        <h5 class="modal-title text-danger">Report No Show</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
@@ -156,12 +153,12 @@
 </div>
 
 <div class="modal fade" id="editModal<?= $row['id'] ?>" tabindex="-1">
-  <div class="modal-dialog modal-dialog-centered" style="margin-top:100px">
-    <div class="modal-content shadow border-0 rounded-3">
+  <div class="modal-dialog modal-dialog-centered modal-dark">
+    <div class="modal-content shadow border-0">
       <form method="post" action="<?= asset('admin/matches') ?>?year=<?= $selected_year ?>">
-        <div class="modal-header bg-dark text-white rounded-top-3">
-          <h5 class="modal-title"><i class="bi bi-pencil-square me-2"></i>Edit Match</h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        <div class="modal-header border-0">
+          <h5 class="modal-title text-gold"><i class="bi bi-pencil-square me-2"></i>Edit Match</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body">
           <input type="hidden" name="match_id" value="<?= $row['id'] ?>">
@@ -220,9 +217,9 @@
             </select>
           </div>
         </div>
-        <div class="modal-footer">
-          <button class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-          <button class="btn btn-dark" name="update_match">Save Changes</button>
+        <div class="modal-footer border-0">
+          <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button class="btn btn-admin-gold" name="update_match">Save Changes</button>
         </div>
       </form>
     </div>
@@ -232,8 +229,7 @@
 
     <?php endif; ?>
 
-  </div>
-</section>
+</div>
 
 
 <!-- Scroll to Top Button -->

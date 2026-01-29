@@ -8,18 +8,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Division Teams - Wish2Padel</title>
 
-    <link rel="stylesheet" href="<?= asset('assets/css/stylee.css?v=12') ?>">
+    <link rel="stylesheet" href="<?= asset('assets/css/style1.css') ?>">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
 </head>
-<body style="background-color: #303030">
+<body class="admin-page">
     
     <?php view('partials.navbar'); ?>
     
-    <section class="container py-5">
-      <h2 class="fw-bold mb-3 text-white">
-        Division Teams
-      </h2>
+    <div class="container py-5 mt-5">
+      <h2 class="text-gold mb-4">Division Teams</h2>
     
       <div class="mb-4">
         <form method="GET" action="">
@@ -33,11 +31,12 @@
         </form>
       </div>
     
-      <div class="card shadow-sm">
-        <div class="card-body table-responsive">
-          <table class="table table-striped table-hover align-middle">
-            <thead class="table-dark">
-              <tr>
+      <div class="card admin-card shadow-lg">
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-dark admin-table table-hover mb-0 align-middle">
+              <thead>
+                <tr>
                 <th scope="col">Team Name</th>
                 <th scope="col">Tournament</th>
                 <th scope="col">Division</th>
@@ -110,7 +109,7 @@
             
                     <td class="text-center">
                         <?php if (empty($t['division'])): ?>
-                            <button class="btn btn-sm btn-primary"
+                            <button class="btn btn-sm btn-outline-primary"
                                 data-bs-toggle="modal"
                                 data-bs-target="#divisionModal"
                                 onclick="setTeamId(<?= $t['team_id'] ?>)">
@@ -125,12 +124,13 @@
             </tbody>
             
           </table>
+              </div>
         </div>
       </div>
-    </section>
+    </div>
     
     <div class="modal fade" id="divisionModal" tabindex="-1" aria-labelledby="divisionModalLabel" aria-hidden="true">
-      <div class="modal-dialog" style="margin-top:150px">
+      <div class="modal-dialog modal-dialog-centered modal-dark">
         <form method="POST">
           <div class="modal-content">
             <div class="modal-header">
@@ -149,9 +149,9 @@
                   <?php endforeach; ?>
               </select>
             </div>
-            <div class="modal-footer">
+            <div class="modal-footer border-0">
               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-              <button type="submit" class="btn btn-success">Save</button>
+              <button type="submit" class="btn btn-admin-gold">Save</button>
             </div>
           </div>
         </form>

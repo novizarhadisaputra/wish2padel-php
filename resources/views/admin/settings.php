@@ -128,7 +128,7 @@
                                 <label for="current_password" class="form-label">Current Password</label>
                                 <div class="input-group">
                                     <input type="password" class="form-control" id="current_password" name="current_password" required>
-                                    <button class="btn btn-outline-secondary toggle-password" type="button" data-target="current_password">
+                                    <button class="btn btn-outline-gold toggle-password" type="button" data-target="current_password">
                                         <i class="bi bi-eye"></i>
                                     </button>
                                 </div>
@@ -138,7 +138,7 @@
                                 <label for="new_password" class="form-label">New Password</label>
                                 <div class="input-group">
                                     <input type="password" class="form-control" id="new_password" name="new_password" required minlength="6">
-                                    <button class="btn btn-outline-secondary toggle-password" type="button" data-target="new_password">
+                                    <button class="btn btn-outline-gold toggle-password" type="button" data-target="new_password">
                                         <i class="bi bi-eye"></i>
                                     </button>
                                 </div>
@@ -148,7 +148,7 @@
                                 <label for="confirm_password" class="form-label">Confirm New Password</label>
                                 <div class="input-group">
                                     <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
-                                    <button class="btn btn-outline-secondary toggle-password" type="button" data-target="confirm_password">
+                                    <button class="btn btn-outline-gold toggle-password" type="button" data-target="confirm_password">
                                         <i class="bi bi-eye"></i>
                                     </button>
                                 </div>

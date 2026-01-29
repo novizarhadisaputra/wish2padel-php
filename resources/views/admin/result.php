@@ -7,16 +7,20 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Match Result - Wish2Padel</title>
+    <link rel="stylesheet" href="<?= asset('assets/css/style1.css') ?>">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
 </head>
-<body>
+<body class="admin-page">
 
 <?php view('partials.navbar'); ?>
 
-<section class="container-section">
-    <h2 class="section-title">Match Results</h2>
-    <table class="table-custom">
-        <thead>
+<div class="container py-5 mt-5">
+    <h2 class="text-gold mb-4">Match Results</h2>
+    <div class="card admin-card shadow-lg">
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-dark admin-table table-hover mb-0 align-middle">
+            <thead>
             <tr>
                 <th>ID</th>
                 <th>Match ID</th>
@@ -52,56 +56,16 @@
             <?php endwhile; ?>
         </tbody>
     </table>
-</section>
+        </div>
+      </div>
+    </div>
+</div>
 
 
 <?php view('partials.footer'); ?>
 
 
-<style>
-.container-section {
-    max-width: 1000px;
-    margin: 30px auto;
-    padding: 20px;
-    border-radius: 15px;
-    background: #fff;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    animation: fadeIn 0.5s ease-in-out;
-}
-.section-title {
-    font-size: 24px;
-    font-weight: bold;
-    margin-bottom: 15px;
-}
-.table-custom {
-    width: 100%;
-    border-collapse: collapse;
-}
-.table-custom th, .table-custom td {
-    padding: 10px;
-    border: 1px solid #ddd;
-    text-align: center;
-}
-.btn-anim {
-    transition: transform 0.2s ease;
-}
-.btn-anim:hover {
-    transform: scale(1.1);
-}
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to   { opacity: 1; transform: translateY(0); }
-}
-.badge {
-    padding: 5px 10px;
-    border-radius: 8px;
-    font-size: 12px;
-    font-weight: bold;
-}
-.badge.pending { background: #ffc107; color: #000; }
-.badge.acc { background: #28a745; color: #fff; }
-.badge.tolak { background: #dc3545; color: #fff; }
-</style>
+
 
 <!-- Scroll to Top Button -->
 <button id="scrollTopBtn" title="Go to top">↑</button>

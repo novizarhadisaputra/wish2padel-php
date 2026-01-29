@@ -235,8 +235,3 @@
     }
   })();
 </script>
-<style>
-  nav .navbar-brand { margin-left: 30px; margin-right: 70px; }
-  .navbar-brand img { height: 120px; width: auto; }
-  nav .nav-item { margin-left: 40px; }
-</style>

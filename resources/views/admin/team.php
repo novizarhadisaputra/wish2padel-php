@@ -7,15 +7,16 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Manage Team - Wish2Padel</title>
-  <link rel="stylesheet" href="<?= asset('assets/css/stylee.css?v=12') ?>">
+  <link rel="stylesheet" href="<?= asset('assets/css/style1.css') ?>">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
 </head>
-<body style="background-color: #303030">
+<body class="admin-page">
 
 <?php view('partials.navbar'); ?>
 
-<section class="container p-4 text-white">
-  <h2 class="mb-4">Manage Team</h2>
+<div class="container py-5 mt-5">
+  <h2 class="text-gold mb-4">Manage Teams</h2>
 
   <?php if ($flash): ?>
     <div class="alert alert-<?= htmlspecialchars($flash['type']) ?>"><?= htmlspecialchars($flash['msg']) ?></div>
@@ -68,10 +69,11 @@
     </div>
   </form>
 
-  <div class="card shadow-sm">
-    <div class="card-body table-responsive">
-      <table class="table table-bordered table-hover align-middle">
-        <thead class="table-dark">
+  <div class="card admin-card shadow-lg">
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-dark admin-table table-hover mb-0 align-middle">
+          <thead>
           <tr>
             <th>League</th>
             <th>Zona</th>
@@ -116,13 +118,13 @@
           <span class="badge bg-<?= $badge ?>"><?= htmlspecialchars($r['payment_status'] ?? '-') ?></span>
         </td>
         <td>
-          <button class="btn btn-sm btn-primary mb-1" data-bs-toggle="modal" data-bs-target="#updateLevelModal<?= (int)$r['team_id'] ?>">Update Level</button>
+          <button class="btn btn-sm btn-outline-primary mb-1" data-bs-toggle="modal" data-bs-target="#updateLevelModal<?= (int)$r['team_id'] ?>">Update Level</button>
           <form method="post" class="d-inline" onsubmit="return confirm('Delete this team?');" action="<?= asset('admin/team') ?>">
             <input type="hidden" name="action" value="delete_team">
             <input type="hidden" name="team_id" value="<?= (int)$r['team_id'] ?>">
-            <button type="submit" class="btn btn-sm btn-danger mb-1">Delete</button>
+            <button type="submit" class="btn btn-sm btn-outline-danger mb-1">Delete</button>
           </form>
-          <button class="btn btn-sm btn-info mb-1" data-bs-toggle="modal" data-bs-target="#detailModal<?= (int)$r['team_id'] ?>">View</button>
+          <button class="btn btn-sm btn-outline-info mb-1" data-bs-toggle="modal" data-bs-target="#detailModal<?= (int)$r['team_id'] ?>">View</button>
         </td>
       </tr>
 
@@ -133,7 +135,18 @@
 
     <?php endwhile; ?>
   <?php else: ?>
-    <tr><td colspan="9" class="text-center text-muted">No data found.</td></tr>
+    <tr>
+        <td colspan="9" class="p-0">
+            <?php 
+                view('partials.empty_state', [
+                    'icon' => 'bi-shield-exclamation',
+                    'title' => 'No Teams Found',
+                    'description' => 'No registration data available for the selected filters. Try adjusting your filters or search terms.',
+                    'extra_class' => 'border-0 m-0'
+                ]); 
+            ?>
+        </td>
+    </tr>
   <?php endif; ?>
 </tbody>
       </table>
@@ -145,7 +158,7 @@ while($r = $result->fetch_assoc()):
 ?>
     <!-- Modal: Update Level -->
     <div class="modal fade" id="updateLevelModal<?= $teamId ?>" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-dialog modal-dialog-centered modal-dark">
             <div class="modal-content">
               <form method="post" action="<?= asset('admin/team') ?>">
                 <div class="modal-header">
@@ -204,7 +217,7 @@ while($r = $result->fetch_assoc()):
 
     <!-- Modal: Detail Members -->
     <div class="modal fade" id="detailModal<?= $teamId ?>" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered" style="margin-top:150px">
+        <div class="modal-dialog modal-dialog-centered modal-dark">
             <div class="modal-content">
               <div class="modal-header">
                 <h5 class="modal-title">Team Details - <?= htmlspecialchars($r['team_name'] ?? '-') ?></h5>
@@ -248,9 +261,10 @@ while($r = $result->fetch_assoc()):
 
 <?php endwhile; ?>
 
+      </div>
     </div>
   </div>
-</section>
+</div>
 
 <!-- Scroll to Top Button -->
 <button id="scrollTopBtn" title="Go to top">↑</button>

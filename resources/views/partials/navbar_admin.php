@@ -26,20 +26,62 @@
         <li class="nav-item">
           <a class="nav-link" href="<?= asset('admin/dashboard') ?>">Dashboard</a>
         </li>
-        <li class="nav-item">
-          <a class="nav-link" href="<?= asset('admin/users') ?>">Users</a>
+
+        <!-- League Management Dropdown -->
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="leagueDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            League
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="leagueDropdown">
+            <li><a class="dropdown-item" href="<?= asset('admin/club') ?>">Clubs</a></li>
+            <li><a class="dropdown-item" href="<?= asset('admin/team') ?>">Teams</a></li>
+            <li><a class="dropdown-item" href="<?= asset('admin/players') ?>">Players</a></li>
+            <li><a class="dropdown-item" href="<?= asset('admin/division') ?>">Divisions</a></li>
+            <li><a class="dropdown-item" href="<?= asset('admin/windows') ?>">Transfer Windows</a></li>
+            <li><a class="dropdown-item" href="<?= asset('admin/registrations') ?>">Registrations</a></li>
+          </ul>
         </li>
-        <li class="nav-item">
-          <a class="nav-link" href="<?= asset('admin/personnel') ?>">Personnel</a>
+
+        <!-- Tournament Management Dropdown -->
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="tournamentDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Tournaments
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="tournamentDropdown">
+            <li><a class="dropdown-item" href="<?= asset('admin/tournament') ?>">Manage Tournaments</a></li>
+            <li><a class="dropdown-item" href="<?= asset('admin/matches') ?>">Matches</a></li>
+            <li><a class="dropdown-item" href="<?= asset('admin/result') ?>">Match Results</a></li>
+            <li><a class="dropdown-item" href="<?= asset('admin/pair') ?>">Pairs</a></li>
+            <li><a class="dropdown-item" href="<?= asset('admin/playoff') ?>">Playoffs</a></li>
+          </ul>
         </li>
-        <li class="nav-item">
-          <a class="nav-link" href="<?= asset('admin/sponsors') ?>">Sponsors</a>
+
+        <!-- Content & Media Dropdown -->
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="contentDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Content
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="contentDropdown">
+            <li><a class="dropdown-item" href="<?= asset('admin/news') ?>">News</a></li>
+            <li><a class="dropdown-item" href="<?= asset('admin/sponsors') ?>">Sponsors</a></li>
+            <li><a class="dropdown-item" href="<?= asset('admin/gallery') ?>">Gallery</a></li>
+            <li><a class="dropdown-item" href="<?= asset('admin/documents') ?>">Documents</a></li>
+            <li><a class="dropdown-item" href="<?= asset('admin/presentation') ?>">Presentations</a></li>
+          </ul>
         </li>
-        <li class="nav-item">
-          <a class="nav-link" href="<?= asset('admin/penalties') ?>">Penalties</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="<?= asset('admin/settings') ?>">Settings</a>
+
+        <!-- System & Settings Dropdown -->
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="systemDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            System
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="systemDropdown">
+            <li><a class="dropdown-item" href="<?= asset('admin/users') ?>">Users</a></li>
+            <li><a class="dropdown-item" href="<?= asset('admin/personnel') ?>">Personnel</a></li>
+            <li><a class="dropdown-item" href="<?= asset('admin/penalties') ?>">Penalties</a></li>
+            <li><a class="dropdown-item" href="<?= asset('admin/payment_settings') ?>">Payment Settings</a></li>
+            <li><a class="dropdown-item" href="<?= asset('admin/settings') ?>">General Settings</a></li>
+          </ul>
         </li>
       </ul>
 
@@ -119,12 +161,3 @@
     }
   })();
 </script>
-<style>
-  /* Reuse public navbar styles */
-  nav .navbar-brand { margin-left: 30px; margin-right: 70px; }
-  .navbar-brand img { height: 120px; width: auto; }
-  nav .nav-item { margin-left: 40px; }
-  nav .navbar-nav > li > a.nav-link { font-weight: 600; color: #fff; }
-  nav .navbar-nav > li > a.nav-link:hover { color: #fff9c4; }
-  .dropdown-menu { border-radius: 0; border: none; box-shadow: 0 0 15px rgba(0,0,0,0.15); }
-</style>

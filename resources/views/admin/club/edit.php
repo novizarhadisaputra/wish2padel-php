@@ -4,21 +4,18 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Update Club - Wish2Padel</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-      <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
-    <link rel="stylesheet" href="<?= asset('assets/css/stylee.css?v=12') ?>">
-    <link rel="icon" type="image/png" sizes="32x32" href="<?= getSiteLogo() ?>">
-        <link rel="icon" type="image/png" sizes="16x16" href="<?= getSiteLogo() ?>">
-        <link rel="apple-touch-icon" href="<?= getSiteLogo() ?>">
+    <link rel="stylesheet" href="<?= asset('assets/css/style1.css') ?>">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
 </head>
-<body style="background-color: #303030">
+<body class="admin-page">
 
 <?php view('partials.navbar'); ?>
 
-<section class="container py-5">
-  <div class="card shadow border-0 rounded-3">
-    <div class="card-header bg-dark text-white">
-      <h4 class="mb-0"><i class="bi bi-pencil-square me-2 text-warning"></i> Edit Club</h4>
+<div class="container py-5 mt-5">
+  <div class="card admin-card shadow-lg">
+    <div class="card-header border-0">
+      <h4 class="mb-0 text-gold"><i class="bi bi-pencil-square me-2"></i> Edit Club</h4>
     </div>
     <div class="card-body">
       <?php if ($club): ?>
@@ -87,8 +84,8 @@
         </script>
 
         <!-- Fields -->
-        <div class="col-12 mt-4 border rounded-3 p-3">
-          <h5 class="fw-bold mb-3"><i class="bi bi-layout-text-window me-2 text-warning"></i> Fields</h5>
+        <div class="col-12 mt-4 border border-secondary rounded-3 p-3">
+          <h5 class="fw-bold mb-3 text-gold"><i class="bi bi-layout-text-window me-2"></i> Fields</h5>
           <div id="pistas-wrapper">
             <?php if(!empty($pistas)): foreach ($pistas as $p): ?>
               <div class="row g-2 mb-2 pista-item">
@@ -102,8 +99,8 @@
         </div>
 
         <!-- Schedules -->
-        <div class="col-12 mt-4 border rounded-3 p-3">
-          <h5 class="fw-bold mb-3"><i class="bi bi-calendar-week me-2 text-warning"></i> Schedules</h5>
+        <div class="col-12 mt-4 border border-secondary rounded-3 p-3">
+          <h5 class="fw-bold mb-3 text-gold"><i class="bi bi-calendar-week me-2"></i> Schedules</h5>
           <div id="schedules-wrapper">
             <?php if(!empty($schedules)): foreach ($schedules as $s): ?>
               <div class="row g-2 mb-2 schedule-item">
@@ -128,8 +125,8 @@
         </div>
 
         <!-- Photos -->
-        <div class="col-12 mt-4 border rounded-3 p-3">
-          <h5 class="fw-bold mb-3"><i class="bi bi-images me-2 text-warning"></i> Photos</h5>
+        <div class="col-12 mt-4 border border-secondary rounded-3 p-3">
+          <h5 class="fw-bold mb-3 text-gold"><i class="bi bi-images me-2"></i> Photos</h5>
           <div class="row g-2 mb-3">
             <?php if(!empty($photos)): foreach ($photos as $ph): ?>
               <div class="col-md-3 mb-2">
@@ -143,10 +140,10 @@
 
         <!-- Actions -->
         <div class="col-12 mt-4 text-end">
-          <button type="submit" class="btn-gold px-4">
+          <button type="submit" class="btn btn-admin-gold px-4">
             <i class="bi bi-check-circle me-1"></i> Update Club
           </button>
-          <a href="<?= asset('admin/club') ?>" class="btn btn-lg rounded-pill px-4 btn-secondary">
+          <a href="<?= asset('admin/club') ?>" class="btn btn-secondary px-4">
             <i class="bi bi-x-circle me-1"></i> Cancel
           </a>
         </div>
@@ -156,7 +153,7 @@
       <?php endif; ?>
     </div>
   </div>
-</section>
+</div>
 
 <!-- TEMPLATES -->
 <template id="pista-template">

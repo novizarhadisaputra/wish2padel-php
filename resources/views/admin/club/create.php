@@ -4,23 +4,18 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Add Club - Wish2Padel</title>
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
-    <link rel="icon" type="image/png" sizes="32x32" href="<?= getSiteLogo() ?>">
-        <link rel="icon" type="image/png" sizes="16x16" href="<?= getSiteLogo() ?>">
-        <link rel="apple-touch-icon" href="<?= getSiteLogo() ?>">
-    <link rel="stylesheet" href="<?= asset('assets/css/stylee.css?v=12') ?>">
-  </head>
-  <body style="background-color: #303030">
+    <link rel="stylesheet" href="<?= asset('assets/css/style1.css') ?>">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+</head>
+<body class="admin-page">
     <?php view('partials.navbar'); ?>
 
-    <section class="container py-5">
-  <div class="card shadow border-0 rounded-3">
-    <div class="card-header py-3" style="background:#212529;">
-      <h4 class="mb-0 text-white">
-        <i class="bi bi-building me-2 text-warning"></i> Add New Club
+<div class="container py-5 mt-5">
+  <div class="card admin-card shadow-lg">
+    <div class="card-header border-0">
+      <h4 class="mb-0 text-gold">
+        <i class="bi bi-building me-2"></i> Add New Club
       </h4>
     </div>
     <div class="card-body">
@@ -86,8 +81,8 @@
         </script>
 
         <!-- Fields -->
-        <div class="col-12 mt-4 border rounded-3 p-3">
-          <h5 class="fw-bold mb-3"><i class="bi bi-layout-text-window me-2 text-warning"></i> Fields</h5>
+        <div class="col-12 mt-4 border border-secondary rounded-3 p-3">
+          <h5 class="fw-bold mb-3 text-gold"><i class="bi bi-layout-text-window me-2"></i> Fields</h5>
           <div id="pistas-wrapper">
             <div class="row g-2 mb-2 pista-item">
               <div class="col-md-6">
@@ -107,8 +102,8 @@
         </div>
 
         <!-- Schedules -->
-        <div class="col-12 mt-4 border rounded-3 p-3">
-          <h5 class="fw-bold mb-3"><i class="bi bi-calendar-week me-2 text-warning"></i> Schedules</h5>
+        <div class="col-12 mt-4 border border-secondary rounded-3 p-3">
+          <h5 class="fw-bold mb-3 text-gold"><i class="bi bi-calendar-week me-2"></i> Schedules</h5>
           <div id="schedules-wrapper">
             <div class="row g-2 mb-2 schedule-item">
               <div class="col-md-3">
@@ -135,8 +130,8 @@
         </div>
 
         <!-- Photos -->
-        <div class="col-12 mt-4 border rounded-3 p-3">
-          <h5 class="fw-bold mb-3"><i class="bi bi-images me-2 text-warning"></i> Photos</h5>
+        <div class="col-12 mt-4 border border-secondary rounded-3 p-3">
+          <h5 class="fw-bold mb-3 text-gold"><i class="bi bi-images me-2"></i> Photos</h5>
           <div id="photos-wrapper">
             <div class="mb-2 photo-item">
               <input type="file" name="photos[]" class="form-control" />
@@ -152,14 +147,14 @@
 
         <!-- Submit -->
         <div class="col-12 mt-4 text-end">
-          <button type="submit" class="btn-gold px-4">
+          <button type="submit" class="btn btn-admin-gold px-4">
             <i class="bi bi-check-circle me-2"></i> Submit Club
           </button>
         </div>
       </form>
     </div>
   </div>
-</section>
+</div>
 
 
     <script>
