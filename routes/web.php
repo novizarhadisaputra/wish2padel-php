@@ -14,6 +14,10 @@ Router::get('/login', 'AuthController@login');
 Router::post('/login', 'AuthController@postLogin');
 Router::get('/logout', 'AuthController@logout');
 
+// Forgot Password
+Router::get('/forgot-password', 'AuthController@forgotPassword');
+Router::post('/forgot-password', 'AuthController@postForgotPassword');
+
 Router::get('/admin/dashboard', 'Admin\DashboardController@index');
 
 // Migrated Routes

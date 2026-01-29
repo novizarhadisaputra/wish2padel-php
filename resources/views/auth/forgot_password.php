@@ -1,14 +1,16 @@
 <?php
-// Retrieve potential error messages from Session
+// Retrieve potential error/success messages from Session
 $error = $_SESSION['error_message'] ?? null;
+$success = $_SESSION['success_message'] ?? null;
 unset($_SESSION['error_message']);
+unset($_SESSION['success_message']);
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Login - Wish2Padel</title>
+    <title>Forgot Password - Wish2Padel</title>
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
     <!-- Bootstrap Icons -->
@@ -25,18 +27,18 @@ unset($_SESSION['error_message']);
             justify-content: center;
             padding: 20px;
         }
-        .login-card {
+        .forgot-card {
             background: rgba(30, 30, 30, 0.95);
             border: 1px solid #d4af37;
             border-radius: 16px;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
             width: 100%;
-            max-width: 450px;
+            max-width: 500px;
             padding: 40px;
             position: relative;
             overflow: hidden;
         }
-        .login-card::before {
+        .forgot-card::before {
             content: '';
             position: absolute;
             top: 0;
@@ -98,29 +100,29 @@ unset($_SESSION['error_message']);
             border-radius: 10px;
             font-size: 0.9rem;
         }
-        .forgot-link {
+        .login-link {
             text-align: center;
             margin-top: 20px;
         }
-        .forgot-link a {
+        .login-link a {
             color: #aaa;
             text-decoration: none;
             font-size: 0.9rem;
             transition: color 0.3s;
         }
-        .forgot-link a:hover {
+        .login-link a:hover {
             color: #d4af37;
         }
     </style>
 </head>
 <body>
 
-<div class="login-card">
+<div class="forgot-card">
     <a href="<?= asset('/') ?>">
         <img src="<?= getSiteLogo() ?>" alt="Wish2Padel" class="logo-img">
     </a>
     
-    <h4 class="text-center text-white mb-4">Sign In</h4>
+    <h4 class="text-center text-white mb-4">Reset Password</h4>
 
     <?php if ($error): ?>
         <div class="alert alert-danger alert-custom d-flex align-items-center" role="alert">
@@ -129,31 +131,56 @@ unset($_SESSION['error_message']);
         </div>
     <?php endif; ?>
 
-    <form action="<?= asset('login') ?>" method="POST">
-        <!-- Username/Email -->
+    <?php if ($success): ?>
+        <div class="alert alert-success alert-custom d-flex align-items-center" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>
+            <div><?= htmlspecialchars($success) ?></div>
+        </div>
+    <?php endif; ?>
+
+    <form action="<?= asset('forgot-password') ?>" method="POST">
+        <!-- Username -->
         <div class="mb-3">
-            <label for="login_identifier" class="form-label">Username / Email</label>
+            <label for="username" class="form-label">Username</label>
             <div class="input-group">
                 <span class="input-group-text"><i class="bi bi-person-fill"></i></span>
-                <input type="text" class="form-control form-control-with-icon" id="login_identifier" name="login_identifier" placeholder="Enter username or email" required>
+                <input type="text" class="form-control form-control-with-icon" id="username" name="username" placeholder="Enter your username" required>
             </div>
         </div>
 
-        <!-- Password -->
+        <!-- Captain Name -->
         <div class="mb-3">
-            <label for="login_password" class="form-label">Password</label>
+            <label for="captain_team" class="form-label">Team Captain Name</label>
+            <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-person-badge-fill"></i></span>
+                <input type="text" class="form-control form-control-with-icon" id="captain_team" name="captain_team" placeholder="Verification" required>
+            </div>
+        </div>
+
+        <!-- Captain Email -->
+        <div class="mb-3">
+            <label for="captain_email" class="form-label">Team Captain Email</label>
+            <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-envelope-fill"></i></span>
+                <input type="email" class="form-control form-control-with-icon" id="captain_email" name="captain_email" placeholder="Verification" required>
+            </div>
+        </div>
+
+        <!-- New Password -->
+        <div class="mb-3">
+            <label for="new_password" class="form-label">New Password</label>
             <div class="input-group">
                 <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
-                <input type="password" class="form-control form-control-with-icon" id="login_password" name="login_password" placeholder="Enter password" required>
+                <input type="password" class="form-control form-control-with-icon" id="new_password" name="new_password" placeholder="Set new password" required>
             </div>
         </div>
 
-        <button type="submit" class="btn-gold-block">Login</button>
+        <button type="submit" class="btn-gold-block">Reset Password</button>
     </form>
 
-    <div class="forgot-link">
-        <a href="<?= asset('forgot-password') ?>">
-            Forgot Password?
+    <div class="login-link">
+        <a href="<?= asset('login') ?>">
+            <i class="bi bi-arrow-left me-1"></i> Back to Login
         </a>
     </div>
 </div>
